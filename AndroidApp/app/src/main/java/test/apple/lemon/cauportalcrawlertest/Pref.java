@@ -6,6 +6,6 @@ package test.apple.lemon.cauportalcrawlertest;
  * Warning : Do not commit this file contain with YOUR ACTUAL ID/PASSWORD.
  */
 public class Pref {
-    public static String ID = "your_id";
-    public static String PASSWD = "your_password";
+    public static String ID = "rino0601";
+    public static String PASSWD = "926458cu";
 }
