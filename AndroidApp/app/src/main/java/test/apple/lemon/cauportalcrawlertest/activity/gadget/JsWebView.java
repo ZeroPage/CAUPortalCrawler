@@ -13,8 +13,6 @@ import android.webkit.WebView;
  *
  */
 public class JsWebView extends WebView {
-    private OnJsResultListener mOnJsResultListener = null;
-
     public JsWebView(Context context) {
         super(context);
     }
@@ -25,19 +23,5 @@ public class JsWebView extends WebView {
 
     public JsWebView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-    }
-
-    @JavascriptInterface
-    public void retrieve(String key, String android_val) { // 이거 안 씀.
-        if (mOnJsResultListener != null)
-            mOnJsResultListener.onJsResult(this, key, android_val);
-    }
-
-    public void setOnJsResultListener(OnJsResultListener onJsResultListener) {
-        mOnJsResultListener = onJsResultListener;
-    }
-
-    public interface OnJsResultListener {
-        void onJsResult(WebView webView, String key, String android_val);
     }
 }
