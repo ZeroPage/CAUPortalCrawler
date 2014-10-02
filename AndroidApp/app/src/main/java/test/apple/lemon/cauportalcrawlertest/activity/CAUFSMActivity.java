@@ -1,6 +1,7 @@
 package test.apple.lemon.cauportalcrawlertest.activity;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.webkit.JsResult;
@@ -28,20 +29,20 @@ public class CAUFSMActivity extends Activity {
     JsWebView popupView;
     private State mState;
 
-    @OnClick(R.id.buttonBackUp)
-    void upViewBack(Button view) {
-        webView.reload();
-    }
-
-    @OnClick(R.id.buttonBackDown)
-    void downViewBack(Button view) {
-        if (popupView.canGoBack()) {
-            popupView.goBack();
-        } else {
-            popupView.clearHistory();
-            popupView.loadUrl("");
-        }
-    }
+//    @OnClick(R.id.buttonBackUp)
+//    void upViewBack(Button view) {
+//        webView.reload();
+//    }
+//
+//    @OnClick(R.id.buttonBackDown)
+//    void downViewBack(Button view) {
+//        if (popupView.canGoBack()) {
+//            popupView.goBack();
+//        } else {
+//            popupView.clearHistory();
+//            popupView.loadUrl("");
+//        }
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +72,13 @@ public class CAUFSMActivity extends Activity {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 // for ignore any of alert dialog!
+                if (message.startsWith("@")) {
+                    String sub = message.substring(1);
+                    Uri uri = Uri.parse(sub);
+                    String key = uri.getScheme();
+                    String val = uri.getSchemeSpecificPart();
+                    mState = mState.resultOfJsForKey(view, key, val);
+                }
                 result.confirm();
                 return true;
             }
@@ -85,11 +93,11 @@ public class CAUFSMActivity extends Activity {
         };
         JsWebView.OnJsResultListener jsResultListener = new JsWebView.OnJsResultListener() {
             @Override
-            public void onJsResult(final WebView webView, final String key, final String android_val) {
-                webView.post(new Runnable() {
+            public void onJsResult(final WebView view, final String key, final String android_val) {
+                view.post(new Runnable() {
                     @Override
                     public void run() {
-                        mState = mState.resultOfJsForKey(webView, key, android_val);
+                        mState = mState.resultOfJsForKey(view, key, android_val);
                     }
                 });
             }
@@ -145,16 +153,16 @@ public class CAUFSMActivity extends Activity {
                 if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
                     return MAIN;
                 } else {
-                    return UNKNOWN;
+                    return this;
                 }
             }
 
             @Override
             public void process(WebView webView) {
                 runJS(webView,
-                        "not_use", "$('#txtUserID').val('" + Pref.ID + "');" +
-                                "$('#txtUserPwd').val('" + Pref.PASSWD + "');" +
-                                "$('#btnLogin').click();");
+                        "not_use", "document.querySelector('#txtUserID').value='" + Pref.ID + "';" +
+                                "document.querySelector('#txtUserPwd').value='" + Pref.PASSWD + "';" +
+                                "document.querySelector('#btnLogin').click();");
             }
         },
         MAIN {
@@ -162,25 +170,18 @@ public class CAUFSMActivity extends Activity {
             private String nextUrl;
 
             @Override
+            public State receiveURL(WebView webView, String url) {
+                return url.startsWith(nextUrl) ? ECLASS : UNKNOWN;
+            }
+
+            @Override
             public void process(WebView webView) {
                 nextUrl = "http://portal.cau.ac.kr/Eclass/Pages/e_class.aspx";
                 webView.loadUrl(nextUrl);
             }
-
-            @Override
-            public State receiveURL(WebView webView, String url) {
-                return url.startsWith(nextUrl) ? ECLASS : UNKNOWN;
-            }
         },
         ECLASS {
             private String nextUrl;
-
-            @Override
-            public void process(WebView webView) {
-                //            runJS(webView, "$('#External_Content_IFrame').attr('src');"); // 만일 이클래스 강의실 페이지가 사용자마다 다른 동적 값일 경우.
-                nextUrl = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp";
-                webView.loadUrl(nextUrl + "?w2xPath=/LMS/comm/main.xml");
-            }
 
             @Override
             public State receiveURL(WebView webView, String url) {
@@ -190,6 +191,13 @@ public class CAUFSMActivity extends Activity {
                     return UNKNOWN;
                 }
             }
+
+            @Override
+            public void process(WebView webView) {
+                //            runJS(webView, "$('#External_Content_IFrame').attr('src');"); // 만일 이클래스 강의실 페이지가 사용자마다 다른 동적 값일 경우.
+                nextUrl = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp";
+                webView.loadUrl(nextUrl + "?w2xPath=/LMS/comm/main.xml");
+            }
         },
         ECLASS_LIST {
 
@@ -197,7 +205,7 @@ public class CAUFSMActivity extends Activity {
 
             @Override
             public void checkIFrameLoaded(WebView webView) {
-                runJS(webView, contentFrame, "$('#contentFrame').contents().find('#infomationCourse_body_tbody > tr > td:first-child').length;");
+                runJS(webView, contentFrame, "document.querySelector('#contentFrame').contentDocument.querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child').length;");
             }
 
             @Override
@@ -205,7 +213,7 @@ public class CAUFSMActivity extends Activity {
                 if (contentFrame.equals(key)) {
                     int i = Integer.parseInt(android_val);
                     if (i != 0) {
-                        runJS(webView, "not_use", "$('#contentFrame').contents().find('#infomationCourse_body_tbody > tr > td:first-child')[0].click();");
+                        runJS(webView, "not_use", "document.querySelector('#contentFrame').contentDocument.querySelectorAll('#infomationCourse_body_tbody > tr > td:nth-child(1)')[0].click();");
                         return WAIT_FOR_BOARD;
                     }
                 }
@@ -214,15 +222,10 @@ public class CAUFSMActivity extends Activity {
         },
         WAIT_FOR_BOARD {
             private final String contentFrame = "contentFrame";
-            @Override
-            public State receiveURL(WebView webView, String url) {
-                return super.receiveURL(webView, url);
-            }
 
             @Override
             public void checkIFrameLoaded(WebView webView) {
-                runJS(webView, contentFrame, "$('#contentFrame').contentDocument.querySelector('html')!=undefined");
-                runJS(webView,"nottt","alert('aa');");
+                runJS(webView, contentFrame, "document.querySelector('#menuFrame').contentDocument.querySelector('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div') != null");
             }
 
             @Override
@@ -230,10 +233,10 @@ public class CAUFSMActivity extends Activity {
                 if (contentFrame.equals(key)) {
                     boolean b = Boolean.parseBoolean(android_val);
                     if (b) {
-                        runJS(webView, "not_use", "$('#contentFrame').contentDocument.querySelector('#outNotice').click();");
+                        runJS(webView, "not_use", "document.querySelector('#menuFrame').contentDocument.querySelector('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div').click();");
                         // $('#menuFrame').contentDocument.querySelectorAll('#repeat5_1_repeat6_0_group7 > div')[0].click();
                         // text를 가지고 있는 녀석을 찾아서 click 하면 됨.
-                        return this;
+                        return UNKNOWN;
                     }
                 }
                 return this;
@@ -243,7 +246,7 @@ public class CAUFSMActivity extends Activity {
         private static void runJS(WebView webView, String key, String script) {
             String js = "javascript:" +
                     "var android_var=" + script + ";" +
-                    "android.retrieve('" + key + "', android_var);";
+                    "alert('@" + key + ":'+android_var);";
             webView.loadUrl(js);
         }
 

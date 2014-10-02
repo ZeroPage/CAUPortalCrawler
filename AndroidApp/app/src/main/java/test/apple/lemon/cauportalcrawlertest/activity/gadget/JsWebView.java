@@ -28,7 +28,7 @@ public class JsWebView extends WebView {
     }
 
     @JavascriptInterface
-    public void retrieve(String key, String android_val) {
+    public void retrieve(String key, String android_val) { // 이거 안 씀.
         if (mOnJsResultListener != null)
             mOnJsResultListener.onJsResult(this, key, android_val);
     }
