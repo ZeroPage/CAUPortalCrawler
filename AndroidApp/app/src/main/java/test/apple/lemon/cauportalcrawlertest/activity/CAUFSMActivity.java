@@ -34,6 +34,14 @@ public class CAUFSMActivity extends Activity {
     LinearLayout popupViewLayout;
 
     private State mState;
+    private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
+        @Override
+        public void onTimeout(WebView webView) {
+            mState = mState.onTimeout();
+            mState.process(webView);
+            textViewForState.setText(mState.name());
+        }
+    };
     private WebViewClient webViewClient;
     private WebChromeClient webChromeClient;
 
@@ -49,6 +57,7 @@ public class CAUFSMActivity extends Activity {
 
         webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(webChromeClient);
+        webView.setOnTimeoutListener(onTimeoutListener);
         WebSettings mainSettings = webView.getSettings();
         mainSettings.setJavaScriptEnabled(true);
         mainSettings.setSupportMultipleWindows(true);
@@ -101,6 +110,7 @@ public class CAUFSMActivity extends Activity {
 
             popupView.setWebViewClient(webViewClient);
             popupView.setWebChromeClient(webChromeClient);
+            popupView.setOnTimeoutListener(onTimeoutListener);
             WebSettings popupSettings = popupView.getSettings();
             popupSettings.setJavaScriptEnabled(true);
 

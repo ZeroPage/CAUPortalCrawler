@@ -152,4 +152,8 @@ public enum State {
     public State resultOfJsForKey(WebView webView, String key, String android_val) {
         return this;
     }
+
+    public State onTimeout() {
+        return START;
+    }
 }
