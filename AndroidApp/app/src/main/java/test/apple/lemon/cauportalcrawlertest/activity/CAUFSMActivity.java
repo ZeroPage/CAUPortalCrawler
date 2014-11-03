@@ -37,8 +37,8 @@ public class CAUFSMActivity extends Activity {
     private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
         @Override
         public void onTimeout(WebView webView) {
-            mState = mState.onTimeout();
-            mState.process(webView);
+            mState = mState.onTimeout(webView);
+            mState.invoke(webView);
             textViewForState.setText(mState.name());
         }
     };
@@ -71,7 +71,7 @@ public class CAUFSMActivity extends Activity {
     public void start() {
         Timber.d("start");
         mState = State.START;
-        mState.process(webView);
+        mState.invoke(webView);
         textViewForState.setText(mState.name());
     }
 
@@ -81,7 +81,7 @@ public class CAUFSMActivity extends Activity {
             if (newProgress == 100) {
                 //http://stackoverflow.com/questions/12076494/onload-in-iframes-not-working-if-iframe-have-non-html-document-in-src-pdf-or-t
                 Timber.d("onProgressChanged:%s", view.getOriginalUrl());
-                mState.checkIFrameLoaded(view);
+                mState.onProgressChanged(view);
             }
         }
 
@@ -93,7 +93,7 @@ public class CAUFSMActivity extends Activity {
                 Uri uri = Uri.parse(sub);
                 String key = uri.getScheme();
                 String val = uri.getSchemeSpecificPart();
-                mState = mState.resultOfJsForKey(view, key, val);
+                mState = mState.onJsAlert(view, key, val);
                 textViewForState.setText(mState.name());
             }
             result.confirm();
@@ -125,8 +125,8 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             Timber.d("onPageFinished:%s", url);
-            mState = mState.receiveURL(view, view.getUrl());
-            mState.process(view);
+            mState = mState.onPageFinished(view, view.getUrl());
+            mState.invoke(view);
             textViewForState.setText(mState.name());
         }
     }
