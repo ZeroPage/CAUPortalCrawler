@@ -119,6 +119,12 @@ public class CAUFSMActivity extends Activity {
             resultMsg.sendToTarget();
             return true;
         }
+
+        @Override
+        public void onCloseWindow(WebView window) {
+            super.onCloseWindow(window);
+            popupViewLayout.removeAllViews();
+        }
     }
 
     private class FSMWebViewClient extends WebViewClient {

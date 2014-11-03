@@ -8,14 +8,11 @@ import timber.log.Timber;
  * Created by rino0601 on 2014. 10. 2..
  */
 public enum State {
-    TRASH {
-
-    },
+    UNKNOWN,
     START {
         @Override
         public void invoke(WebView webView) {
-            webView.loadUrl("http://portal.cau.ac.kr");
-            //        mWebView.loadUrl("http://cautis.cau.ac.kr/SMT/main.jsp"); // 모바일 페이지. 좀더 편리 할듯하나
+            openURL(webView, "http://portal.cau.ac.kr");
         }
 
         @Override
@@ -25,17 +22,18 @@ public enum State {
             } else if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
                 return MAIN;
             } else {
-                return TRASH;
+                return UNKNOWN;
             }
         }
     },
     LOGIN {
         @Override
         public void invoke(WebView webView) {
-            runJS(webView,
-                    "not_use", "$('#txtUserID').val('" + Pref.ID + "');" +
-                            "$('#txtUserPwd').val('" + Pref.PASSWD + "');" +
-                            "$('#btnLogin').click();");
+            StringBuilder jsBuilder = new StringBuilder()
+                    .append(String.format("document.querySelector('#txtUserID').value='%s';", Pref.ID))
+                    .append(String.format("document.querySelector('#txtUserPwd').value='%s';", Pref.PASSWD));
+            jsBuilder.append("document.querySelector('#btnLogin').click();");
+            runJS(webView, jsBuilder.toString());
         }
 
         @Override
@@ -48,55 +46,64 @@ public enum State {
         }
     },
     MAIN {
-
-        private String nextUrl;
+        private final String nextUrl = "http://portal.cau.ac.kr/Eclass/Pages/e_class.aspx";
 
         @Override
         public void invoke(WebView webView) {
-            nextUrl = "http://portal.cau.ac.kr/Eclass/Pages/e_class.aspx";
-            webView.loadUrl(nextUrl);
+            openURL(webView, nextUrl);
         }
 
         @Override
         public State onPageFinished(WebView webView, String url) {
-            return url.startsWith(nextUrl) ? ECLASS : TRASH;
+            return url.startsWith(nextUrl) ? ECLASS : UNKNOWN;
         }
     },
     ECLASS {
-        private String nextUrl_prefix = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp";
-        private String nextUrl = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp?w2xPath=/LMS/comm/main.xml";
+        // private String nextUrl_prefix = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp";
+        private final String nextUrl = "http://cautis.cau.ac.kr/LMS/websquare/websquare.jsp?w2xPath=/LMS/comm/main.xml";
 
         @Override
         public void invoke(WebView webView) {
-            //            runJS(webView, "$('#External_Content_IFrame').attr('src');"); // 만일 이클래스 강의실 페이지가 사용자마다 다른 동적 값일 경우.
-            webView.loadUrl(nextUrl);
+            // runJS(webView, "$('#External_Content_IFrame').attr('src');"); // 만일 이클래스 강의실 페이지가 사용자마다 다른 동적 값일 경우.
+            openURL(webView, nextUrl);
         }
 
         @Override
         public State onPageFinished(WebView webView, String url) {
-            if (url.startsWith(nextUrl_prefix)) {
+            if (url.startsWith(nextUrl)) {
                 return ECLASS_LIST;
             } else {
-                return TRASH;
+                return UNKNOWN;
             }
         }
     },
     ECLASS_LIST {
 
-        private final String frame = "contentFrame";
+        private final String tag = "infomationCourse_body_tbody";
+
+        @Override
+        public void invoke(WebView webView) {
+            Timber.d("just wait.");
+        }
 
         @Override
         public State onProgressChanged(WebView webView) {
-            runJS(webView, frame, "$('#contentFrame').contents().find('#infomationCourse_body_tbody > tr > td:first-child').length;");
+            String script = "document.querySelector('#contentFrame').contentWindow.document" +
+                    ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
+                    + ".length";
+            runJS(webView, script, tag);
             return this;
         }
 
         @Override
         public State onJsAlert(WebView webView, String key, String android_val) {
-            if (frame.equals(key)) {
+            if (tag.equals(key)) {
                 int i = Integer.parseInt(android_val);
                 if (i != 0) {
-                    runJS(webView, "not_use", "$('#contentFrame').contents().find('#infomationCourse_body_tbody > tr > td:nth-child(1)').click();");
+                    String script = "document.querySelector('#contentFrame').contentWindow.document" +
+                            ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
+                            + "[0].click()";
+                    runJS(webView, script);
                     return LECTURE_MAIN;
                 }
             }
@@ -104,36 +111,68 @@ public enum State {
         }
     },
     LECTURE_MAIN {
-        private final String frame = "menuFrame";
+        private final String tag = "boardIdExist";
 
         @Override
         public State onProgressChanged(WebView webView) {
-            runJS(webView, frame, "$('#menuFrame').contents().find('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div') != null");
+            String script = "document.querySelector('#menuFrame').contentWindow.document" +
+                    ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div')"
+                    + "!= null";
+            runJS(webView, script, tag);
             return this;
         }
 
         @Override
         public State onJsAlert(WebView webView, String key, String android_val) {
-            if (frame.equals(key)) {
+            if (tag.equals(key)) {
                 if (Boolean.parseBoolean(android_val)) {
-                    runJS(webView, "not_use", "$('#menuFrame').contents().find('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div').click();");
-                    // $('#menuFrame').contentDocument.querySelectorAll('#repeat5_1_repeat6_0_group7 > div')[0].click();
-                    // text를 가지고 있는 녀석을 찾아서 click 하면 됨.
-                    return TRASH;
+
+                    String script = "document.querySelector('#menuFrame').contentWindow.document" +
+                            ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr > td > div > div.depth3_out')"
+                            + "[0].click()";
+                    runJS(webView, script);
+                    // 0 공지사항
+                    // 1 강의콘텐츠
+                    // 2 과제방
+                    // 3 팀프로젝트
+                    // 4 공유자료실
+                    // 5 과목Q&A
+                    // 6 노트정리 // 안 해
+                    // 7 학습관리 // 안 해
+                    return LECTURE_LOOKUP;
                 }
             }
             return super.onJsAlert(webView, key, android_val);
         }
     },
-    LECTURE_NOTICE,
-    LECTURE_CONTENT,
-    LECTURE_HW,
-    LECTURE_SHARE;
+    LECTURE_LOOKUP {
+        @Override
+        public State onProgressChanged(WebView webView) {
+            runJS(webView, "document.querySelector('#imgClose').click();", "close");
+            return this;
+        }
 
-    private static void runJS(WebView webView, String key, String script) {
+        @Override
+        public State onJsAlert(WebView webView, String key, String android_val) {
+            if (key.equals("close")) {
+                return UNKNOWN;
+            }
+            return super.onJsAlert(webView, key, android_val);
+        }
+    },;
+
+    private static void openURL(WebView webView, String url) {
+        webView.loadUrl(url);
+    }
+
+    private static void runJS(WebView webView, String script) {
+        runJS(webView, script, "void");
+    }
+
+    private static void runJS(WebView webView, String script, String tag) {
         String js = "javascript:" +
                 "var android_var=" + script + ";" +
-                "alert('@" + key + ":'+android_var);";
+                "alert('@" + tag + ":'+android_var);";
         webView.loadUrl(js);
     }
 
