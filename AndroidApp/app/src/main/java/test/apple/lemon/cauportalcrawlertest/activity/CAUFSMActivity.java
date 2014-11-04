@@ -29,7 +29,7 @@ public class CAUFSMActivity extends Activity {
     TextView textViewForState;
 
     @InjectView(R.id.webView)
-    JsWebView webView;
+    JsWebView mainWebView;
 
     @InjectView(R.id.popupViewLayout)
     LinearLayout popupViewLayout;
@@ -56,15 +56,28 @@ public class CAUFSMActivity extends Activity {
         webViewClient = new FSMWebViewClient();
         webChromeClient = new FSMWebChromeClient();
 
-        webView.setWebViewClient(webViewClient);
-        webView.setWebChromeClient(webChromeClient);
-        webView.setOnTimeoutListener(onTimeoutListener);
-        WebSettings mainSettings = webView.getSettings();
+        mainWebView.setWebViewClient(webViewClient);
+        mainWebView.setWebChromeClient(webChromeClient);
+        mainWebView.setOnTimeoutListener(onTimeoutListener);
+        WebSettings mainSettings = mainWebView.getSettings();
         mainSettings.setJavaScriptEnabled(true);
         mainSettings.setSupportMultipleWindows(true);
 
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
+
+        State.setStateListener(new State.StateListener() {
+            @Override
+            public void onFinalState() {
+                finish();
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        finish();
+//                    }
+//                });
+            }
+        });
 
         // todo network state check.
         start();
@@ -72,7 +85,7 @@ public class CAUFSMActivity extends Activity {
 
     public void start() {
         mState = State.START;
-        mState.invoke(webView);
+        mState.invoke(mainWebView);
         textViewForState.setText(mState.name());
     }
 
@@ -127,15 +140,18 @@ public class CAUFSMActivity extends Activity {
             super.onCloseWindow(window);
             popupViewLayout.removeAllViews();
             popupViewLayout.setVisibility(View.INVISIBLE);
+            mState = State.ECLASS_LIST;
+            textViewForState.setText(mState.name());
+            State.runJSpub(mainWebView, "'close'", "close");
         }
     }
 
     private class FSMWebViewClient extends WebViewClient {
         @Override
-        public void onPageFinished(WebView view, String url) {
+        public void onPageFinished(WebView webView, String url) {
             Timber.d("onPageFinished:%s", url);
-            mState = mState.onPageFinished(view, view.getUrl());
-            mState.invoke(view);
+            mState = mState.onPageFinished(webView, webView.getUrl());
+            mState.invoke(webView);
             textViewForState.setText(mState.name());
         }
     }
