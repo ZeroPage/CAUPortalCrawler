@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -63,13 +64,13 @@ public class CAUFSMActivity extends Activity {
         mainSettings.setSupportMultipleWindows(true);
 
         popupViewLayout.removeAllViews();
+        popupViewLayout.setVisibility(View.VISIBLE);
 
         // todo network state check.
         start();
     }
 
     public void start() {
-        Timber.d("start");
         mState = State.START;
         mState.invoke(webView);
         textViewForState.setText(mState.name());
@@ -104,8 +105,9 @@ public class CAUFSMActivity extends Activity {
         public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             Context baseContext = getBaseContext();
             JsWebView popupView = new JsWebView(baseContext);
-            popupView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            popupView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             popupViewLayout.removeAllViews();
+            popupViewLayout.setVisibility(View.VISIBLE);
             popupViewLayout.addView(popupView);
 
             popupView.setWebViewClient(webViewClient);
@@ -124,6 +126,7 @@ public class CAUFSMActivity extends Activity {
         public void onCloseWindow(WebView window) {
             super.onCloseWindow(window);
             popupViewLayout.removeAllViews();
+            popupViewLayout.setVisibility(View.INVISIBLE);
         }
     }
 

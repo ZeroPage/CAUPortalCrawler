@@ -103,7 +103,9 @@ public enum State {
                     String script = "document.querySelector('#contentFrame').contentWindow.document" +
                             ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
                             + "[0].click()";
+                    // todo 적절히 입장...
                     runJS(webView, script);
+                    LECTURE_MAIN.invoke(webView);
                     return LECTURE_MAIN;
                 }
             }
@@ -111,26 +113,28 @@ public enum State {
         }
     },
     LECTURE_MAIN {
-        private final String tag = "boardIdExist";
+        private final String boardExist = "boardIdExist";
+        private final String boardEnter = "boardEnter";
 
         @Override
         public State onProgressChanged(WebView webView) {
             String script = "document.querySelector('#menuFrame').contentWindow.document" +
                     ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div')"
                     + "!= null";
-            runJS(webView, script, tag);
+            runJS(webView, script, boardExist);
             return this;
         }
 
         @Override
         public State onJsAlert(WebView webView, String key, String android_val) {
-            if (tag.equals(key)) {
+            if (boardExist.equals(key)) {
                 if (Boolean.parseBoolean(android_val)) {
 
                     String script = "document.querySelector('#menuFrame').contentWindow.document" +
                             ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr > td > div > div.depth3_out')"
                             + "[0].click()";
-                    runJS(webView, script);
+                    // todo 적절히 입장...
+                    runJS(webView, script, boardEnter);
                     // 0 공지사항
                     // 1 강의콘텐츠
                     // 2 과제방
@@ -139,27 +143,51 @@ public enum State {
                     // 5 과목Q&A
                     // 6 노트정리 // 안 해
                     // 7 학습관리 // 안 해
-                    return LECTURE_LOOKUP;
+                    return this;
                 }
+            } else if (boardEnter.equals(key)) { // load 되길 기다린다.
+                return LECTURE_CRAWL;
             }
             return super.onJsAlert(webView, key, android_val);
         }
     },
-    LECTURE_LOOKUP {
+    LECTURE_CRAWL {
+
+        private final String deterNext = "deterNext";
+
         @Override
         public State onProgressChanged(WebView webView) {
-            runJS(webView, "document.querySelector('#imgClose').click();", "close");
+            // todo 지금 페이지를 읽어야 하는지를 판단. 지금은 그냥 읽음.
+            String script = "'crawl'";
+            runJS(webView, script, deterNext);
             return this;
         }
 
         @Override
         public State onJsAlert(WebView webView, String key, String android_val) {
-            if (key.equals("close")) {
-                return UNKNOWN;
+            if (key.equals(deterNext)) {
+                if (android_val.equals("crawl")) {
+                    return this;
+                }
             }
             return super.onJsAlert(webView, key, android_val);
         }
-    },;
+        //        @Override
+//        public State onProgressChanged(WebView webView) {
+//
+//
+//            runJS(webView, "document.querySelector('#imgClose').click();", "close");
+//            return this;
+//        }
+//
+//        @Override
+//        public State onJsAlert(WebView webView, String key, String android_val) {
+//            if (key.equals("close")) {
+//                return UNKNOWN;
+//            }
+//            return super.onJsAlert(webView, key, android_val);
+//        }
+    };
 
     private static void openURL(WebView webView, String url) {
         webView.loadUrl(url);
