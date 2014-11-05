@@ -118,7 +118,7 @@ public enum State {
 
                 // 지금은 그냥 종료.
                 stateListener.onFinalState();
-                return FINAL;
+                return FINAL; //FINAL은 그냥 표시해 주기 위한 것일 뿐.
             }
             return this;
         }
@@ -148,7 +148,7 @@ public enum State {
                     return this;
                 }
             } else if (key.equals(boardEnter)) { // load 되길 기다린다.
-                runJS(webView, "" + boardIndex, LECTURE_CRAWL.name());
+                runJS(webView, "" + boardIndex, LECTURE_CRAWL.name()); // fixme key.
                 return LECTURE_CRAWL;
             } else if (key.equals(this.name())) {
                 boardIndex++;
@@ -180,21 +180,22 @@ public enum State {
         }
     },
     LECTURE_CRAWL {
-        private final String deterNext = "deterNext";
+        private final String crawling = "crawling";
 
         private String boardIndex = "unknown";
 
         @Override
         public State onProgressChanged(WebView webView) {
+            // fixme, onJsAlert보다 이게 먼저 호출되는 경우 문제가 발생.
             String script = "document.querySelector('#contentFrame').contentWindow.document" +
                     ".querySelector('table.grid_header').innerHTML";
-            runJS(webView, script, deterNext);
+            runJS(webView, script, crawling);
             return this;
         }
 
         @Override
         public State onJsAlert(WebView webView, String key, String android_val) {
-            if (key.equals(deterNext)) {
+            if (key.equals(crawling)) {
                 try {
                     String data = String.format("<table class=\"grid_header\">%s</table>", android_val);
                     File directory = Environment.getExternalStorageDirectory();
@@ -206,31 +207,16 @@ public enum State {
                 }
                 return LECTURE_MAIN;
             } else if (key.equals(this.name())) {
+                // set Index
                 boardIndex = android_val;
                 return this;
-            } else if (key.equals(LECTURE_MAIN.name())) { // fixme, 일단 state 가 넘어갈 때까지 재시도.
-                runJS(webView, "'next'", LECTURE_MAIN.name()); // fixme, 이 방법으로 state 옮기는거 가끔 이탈함.
-                return LECTURE_MAIN;
-            } else if (key.equals("boardEnter")) { // fixme....
-                return this;
             } else {
-                Timber.d("asdf");
+                throw new IllegalStateException(key);
             }
-            return super.onJsAlert(webView, key, android_val);
+            //return UNKNOWN;
         }
     },
-    FINAL {
-        @Override
-        public void invoke(WebView webView) {
-            stateListener.onFinalState();
-        }
-
-        @Override
-        public State onJsAlert(WebView webView, String key, String android_val) {
-            stateListener.onFinalState();
-            return super.onJsAlert(webView, key, android_val);
-        }
-    };
+    FINAL;
     private static StateListener stateListener = new StateListener() {
         @Override
         public void onFinalState() {
@@ -242,14 +228,19 @@ public enum State {
         webView.loadUrl(url);
     }
 
-    private static void runJS(WebView webView, String script, String tag) {
-        String js = "javascript:" +
-                "var android_var=" + script + ";" +
-                "alert('@" + tag + ":'+android_var);";
-        webView.loadUrl(js);
+    private static void runJS(final WebView webView, final String script, final String tag) {
+        webView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String js = "javascript:" +
+                        "var android_var=" + script + ";" +
+                        "alert('@" + tag + ":'+android_var);";
+                webView.loadUrl(js);
+            }
+        }, 50); // 약간의 갭을 줘서 이탈을 조금이라도 방지.
     }
 
-    public static void runJSpub(WebView webView, String script, String tag) { // fixme
+    public static void runJSPublic(WebView webView, String script, String tag) { // fixme
         runJS(webView, script, tag);
     }
 
@@ -280,5 +271,6 @@ public enum State {
 
     public static interface StateListener {
         void onFinalState();
+        // todo invoke와 state return 문제를 해결하기 위해  setState를 만들 것.
     }
 }

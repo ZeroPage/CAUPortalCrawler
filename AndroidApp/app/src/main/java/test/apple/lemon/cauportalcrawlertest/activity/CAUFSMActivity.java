@@ -38,6 +38,7 @@ public class CAUFSMActivity extends Activity {
     private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
         @Override
         public void onTimeout(WebView webView) {
+            // todo, sub-webview 고칠 것.
             mState = mState.onTimeout(webView);
             mState.invoke(webView);
             textViewForState.setText(mState.name());
@@ -70,12 +71,6 @@ public class CAUFSMActivity extends Activity {
             @Override
             public void onFinalState() {
                 finish();
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        finish();
-//                    }
-//                });
             }
         });
 
@@ -142,7 +137,7 @@ public class CAUFSMActivity extends Activity {
             popupViewLayout.setVisibility(View.INVISIBLE);
             mState = State.ECLASS_LIST;
             textViewForState.setText(mState.name());
-            State.runJSpub(mainWebView, "'close'", "close");
+            State.runJSPublic(mainWebView, "'close'", "close");
         }
     }
 
