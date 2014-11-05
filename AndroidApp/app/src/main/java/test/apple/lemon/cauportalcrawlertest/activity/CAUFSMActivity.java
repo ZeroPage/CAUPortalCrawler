@@ -39,8 +39,7 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onTimeout(WebView webView) {
             // todo, sub-webview 고칠 것.
-            mState = mState.onTimeout(webView);
-            mState.invoke(webView);
+            mState.onTimeout(webView);
             textViewForState.setText(mState.name());
         }
     };
@@ -72,6 +71,11 @@ public class CAUFSMActivity extends Activity {
             public void onFinalState() {
                 finish();
             }
+
+            @Override
+            public void onStateChange(State changeTo) {
+                mState = changeTo;
+            }
         });
 
         // todo network state check.
@@ -102,7 +106,7 @@ public class CAUFSMActivity extends Activity {
                 Uri uri = Uri.parse(sub);
                 String key = uri.getScheme();
                 String val = uri.getSchemeSpecificPart();
-                mState = mState.onJsAlert(view, key, val);
+                mState.onJsAlert(view, key, val);
                 textViewForState.setText(mState.name());
             }
             result.confirm();
@@ -145,8 +149,8 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onPageFinished(WebView webView, String url) {
             Timber.d("onPageFinished:%s", url);
-            mState = mState.onPageFinished(webView, webView.getUrl());
-            mState.invoke(webView);
+            //mState =
+            mState.onPageFinished(webView, webView.getUrl());
             textViewForState.setText(mState.name());
         }
     }

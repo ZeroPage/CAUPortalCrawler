@@ -22,13 +22,16 @@ public enum State {
         }
 
         @Override
-        public State onPageFinished(WebView webView, String url) {
+        public void onPageFinished(WebView webView, String url) {
             if (url.startsWith("http://portal.cau.ac.kr/_layouts/Cau/Member/Login.aspx")) {
-                return LOGIN;
+                stateListener.onStateChange(LOGIN);
+                LOGIN.invoke(webView);
             } else if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
-                return MAIN;
+                stateListener.onStateChange(MAIN);
+                MAIN.invoke(webView);
             } else {
-                return UNKNOWN;
+                stateListener.onStateChange(UNKNOWN);
+                UNKNOWN.invoke(webView);
             }
         }
     },
@@ -43,11 +46,10 @@ public enum State {
         }
 
         @Override
-        public State onPageFinished(WebView webView, String url) {
+        public void onPageFinished(WebView webView, String url) {
             if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
-                return MAIN;
-            } else {
-                return this;
+                stateListener.onStateChange(MAIN);
+                MAIN.invoke(webView);
             }
         }
     },
@@ -60,8 +62,14 @@ public enum State {
         }
 
         @Override
-        public State onPageFinished(WebView webView, String url) {
-            return url.startsWith(nextUrl) ? ECLASS : UNKNOWN;
+        public void onPageFinished(WebView webView, String url) {
+            if (url.startsWith(nextUrl)) {
+                stateListener.onStateChange(ECLASS);
+                ECLASS.invoke(webView);
+            } else {
+                stateListener.onStateChange(UNKNOWN);
+                UNKNOWN.invoke(webView);
+            }
         }
     },
     ECLASS {
@@ -75,11 +83,13 @@ public enum State {
         }
 
         @Override
-        public State onPageFinished(WebView webView, String url) {
+        public void onPageFinished(WebView webView, String url) {
             if (url.startsWith(nextUrl)) {
-                return ECLASS_LIST;
+                stateListener.onStateChange(ECLASS_LIST);
+                ECLASS_LIST.invoke(webView);
             } else {
-                return UNKNOWN;
+                stateListener.onStateChange(UNKNOWN);
+                UNKNOWN.invoke(webView);
             }
         }
     },
@@ -93,16 +103,15 @@ public enum State {
         }
 
         @Override
-        public State onProgressChanged(WebView webView) {
+        public void onProgressChanged(WebView webView) {
             String script = "document.querySelector('#contentFrame').contentWindow.document" +
                     ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
                     + ".length";
             runJS(webView, script, tag);
-            return this;
         }
 
         @Override
-        public State onJsAlert(WebView webView, String key, String android_val) {
+        public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(tag)) {
                 int i = Integer.parseInt(android_val);
                 if (i != 0) {
@@ -111,16 +120,15 @@ public enum State {
                             + "[0].click()";
                     // todo 적절히 입장...
                     runJS(webView, script, "void");
-                    return LECTURE_MAIN;
+                    stateListener.onStateChange(LECTURE_MAIN);
                 }
             } else if (key.equals("close")) {
                 // todo 다음 강의.
 
                 // 지금은 그냥 종료.
                 stateListener.onFinalState();
-                return FINAL; //FINAL은 그냥 표시해 주기 위한 것일 뿐.
+                stateListener.onStateChange(FINAL);
             }
-            return this;
         }
     },
     LECTURE_MAIN {
@@ -130,37 +138,33 @@ public enum State {
         private int boardIndex = 0;
 
         @Override
-        public State onProgressChanged(WebView webView) {
+        public void onProgressChanged(WebView webView) {
             String script = "document.querySelector('#menuFrame').contentWindow.document" +
                     ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div')"
                     + "!= null";
             runJS(webView, script, boardExist);
-            return this;
         }
 
         @Override
-        public State onJsAlert(WebView webView, String key, String android_val) {
+        public void onJsAlert(WebView webView, String key, String android_val) { // fixme, 바뀐 state 변경 정책에 따라 맞출 것.
             if (key.equals(boardExist)) {
                 if (Boolean.parseBoolean(android_val)) {
                     //init
                     boardIndex = 0;
                     enterBoard(webView);
-                    return this;
                 }
             } else if (key.equals(boardEnter)) { // load 되길 기다린다.
                 runJS(webView, "" + boardIndex, LECTURE_CRAWL.name()); // fixme key.
-                return LECTURE_CRAWL;
+                stateListener.onStateChange(LECTURE_CRAWL);
             } else if (key.equals(this.name())) {
                 boardIndex++;
                 if (boardIndex < 6) {
                     enterBoard(webView);
-                    return this;
                 } else {
                     runJS(webView, "document.querySelector('#imgClose').click();", "see_WebChromeClient.onClose");
-                    return ECLASS_LIST;
+                    stateListener.onStateChange(ECLASS_LIST);
                 }
             }
-            return super.onJsAlert(webView, key, android_val);
         }
 
         private void enterBoard(WebView webView) {
@@ -185,16 +189,15 @@ public enum State {
         private String boardIndex = "unknown";
 
         @Override
-        public State onProgressChanged(WebView webView) {
+        public void onProgressChanged(WebView webView) {
             // fixme, onJsAlert보다 이게 먼저 호출되는 경우 문제가 발생.
             String script = "document.querySelector('#contentFrame').contentWindow.document" +
                     ".querySelector('table.grid_header').innerHTML";
             runJS(webView, script, crawling);
-            return this;
         }
 
         @Override
-        public State onJsAlert(WebView webView, String key, String android_val) {
+        public void onJsAlert(WebView webView, String key, String android_val) { // fixme, 바뀐 state 변경 정책에 따라 맞출 것.
             if (key.equals(crawling)) {
                 try {
                     String data = String.format("<table class=\"grid_header\">%s</table>", android_val);
@@ -205,21 +208,25 @@ public enum State {
                 } finally {
                     runJS(webView, "'next'", LECTURE_MAIN.name()); // fixme, 이 방법으로 state 옮기는거 가끔 이탈함.
                 }
-                return LECTURE_MAIN;
+                stateListener.onStateChange(LECTURE_MAIN);
             } else if (key.equals(this.name())) {
                 // set Index
                 boardIndex = android_val;
-                return this;
             } else {
+                stateListener.onStateChange(UNKNOWN);
                 throw new IllegalStateException(key);
             }
-            //return UNKNOWN;
         }
     },
     FINAL;
     private static StateListener stateListener = new StateListener() {
         @Override
         public void onFinalState() {
+            // do nothing. dummy listener.
+        }
+
+        @Override
+        public void onStateChange(State changeTo) {
             // do nothing. dummy listener.
         }
     };
@@ -252,25 +259,24 @@ public enum State {
 
     }
 
-    public State onPageFinished(WebView webView, String url) { //receiveURL
-        Timber.d(url);
-        return this;
+    public void onPageFinished(WebView webView, String url) { //receiveURL
+        Timber.d(String.format("onPageFinished @ %s @ %s", name(), url));
     }
 
-    public State onProgressChanged(WebView webView) { //checkIFrameLoaded
-        return this;
+    public void onProgressChanged(WebView webView) { //checkIFrameLoaded
     }
 
-    public State onJsAlert(WebView webView, String key, String android_val) { //resultOfJsForKey
-        return this;
+    public void onJsAlert(WebView webView, String key, String android_val) { //resultOfJsForKey
     }
 
-    public State onTimeout(WebView webView) {
-        return START;
+    public void onTimeout(WebView webView) {
+        stateListener.onStateChange(START);
+        START.invoke(webView);
     }
 
     public static interface StateListener {
         void onFinalState();
-        // todo invoke와 state return 문제를 해결하기 위해  setState를 만들 것.
+
+        void onStateChange(State changeTo); // todo rename to setState.
     }
 }
