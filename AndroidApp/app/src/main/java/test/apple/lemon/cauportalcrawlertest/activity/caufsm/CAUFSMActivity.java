@@ -38,9 +38,9 @@ public class CAUFSMActivity extends Activity {
     private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
         @Override
         public void onTimeout(WebView webView) {
-            // todo, sub-webview 고칠 것.
             state.onTimeout(webView);
             textViewForState.setText(state.name());
+            initLayout();
         }
     };
     private WebViewClient webViewClient;
@@ -68,6 +68,12 @@ public class CAUFSMActivity extends Activity {
 
         WebViewState.setStateListener(new WebViewState.StateListener() {
             @Override
+            public void onStartState() {
+                textViewForState.setText(state.name());
+                initLayout();
+            }
+
+            @Override
             public void onFinalState() {
                 finish();
             }
@@ -78,16 +84,10 @@ public class CAUFSMActivity extends Activity {
             }
         });
 
+
         // todo network state check.
-        start();
+        WebViewState.start(mainWebView);
     }
-
-    public void start() {
-        state = WebViewState.START;
-        state.invoke(mainWebView);
-        textViewForState.setText(state.name());
-    }
-
     private class FSMWebChromeClient extends WebChromeClient {
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
@@ -137,12 +137,16 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onCloseWindow(WebView window) {
             super.onCloseWindow(window);
-            popupViewLayout.removeAllViews();
-            popupViewLayout.setVisibility(View.INVISIBLE);
             state = WebViewState.ECLASS_LIST;
             textViewForState.setText(state.name());
+            initLayout();
             WebViewState.runJSPublic(mainWebView, "'close'", "close");
         }
+    }
+
+    private void initLayout() {
+        popupViewLayout.removeAllViews();
+        popupViewLayout.setVisibility(View.INVISIBLE);
     }
 
     private class FSMWebViewClient extends WebViewClient {

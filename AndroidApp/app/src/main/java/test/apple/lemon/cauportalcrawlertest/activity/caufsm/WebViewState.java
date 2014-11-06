@@ -14,7 +14,7 @@ import timber.log.Timber;
 /**
  * Created by rino0601 on 2014. 10. 2..
  */
-public enum WebViewState {
+enum WebViewState {
     UNKNOWN,
     START {
         @Override
@@ -96,7 +96,7 @@ public enum WebViewState {
     },
     ECLASS_LIST {
 
-        private final String tag = "infomationCourse_body_tbody";
+        private final String tag = "infomationCourse_body_tbody"; // todo, rename and rewrite tag.
 
         @Override
         public void invoke(WebView webView) {
@@ -147,7 +147,7 @@ public enum WebViewState {
         }
 
         @Override
-        public void onJsAlert(WebView webView, String key, String android_val) { // fixme, 바뀐 state 변경 정책에 따라 맞출 것.
+        public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(boardExist)) {
                 if (Boolean.parseBoolean(android_val)) {
                     //init
@@ -162,8 +162,8 @@ public enum WebViewState {
                 if (boardIndex < 6) {
                     enterBoard(webView);
                 } else {
-                    runJS(webView, "document.querySelector('#imgClose').click();", "see_WebChromeClient.onClose");
                     stateListener.onStateChange(ECLASS_LIST);
+                    runJS(webView, "document.querySelector('#imgClose').click();", "see_WebChromeClient.onClose");
                 }
             }
         }
@@ -207,20 +207,22 @@ public enum WebViewState {
                 } catch (IOException e) {
                     Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
                 } finally {
+                    stateListener.onStateChange(LECTURE_MAIN);
                     runJS(webView, "'next'", LECTURE_MAIN.name()); // fixme, 이 방법으로 state 옮기는거 가끔 이탈함.
                 }
-                stateListener.onStateChange(LECTURE_MAIN);
             } else if (key.equals(this.name())) {
                 // set Index
                 boardIndex = android_val;
-            } else {
-                stateListener.onStateChange(UNKNOWN);
-                throw new IllegalStateException(key);
             }
         }
     },
     FINAL;
     private static StateListener stateListener = new StateListener() {
+        @Override
+        public void onStartState() {
+
+        }
+
         @Override
         public void onFinalState() {
             // do nothing. dummy listener.
@@ -275,9 +277,18 @@ public enum WebViewState {
         START.invoke(webView);
     }
 
+    public static void start(WebView webView) {
+        stateListener.onStateChange(START);
+        START.invoke(webView);
+        stateListener.onStartState();
+    }
+
     public static interface StateListener {
+        void onStartState();
+
         void onFinalState();
 
         void onStateChange(WebViewState changeTo); // todo rename to setState.
     }
 }
+// fixme, public들 전부 package local로...
