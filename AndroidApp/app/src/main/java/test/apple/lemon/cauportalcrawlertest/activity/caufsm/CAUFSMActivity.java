@@ -1,4 +1,4 @@
-package test.apple.lemon.cauportalcrawlertest.activity;
+package test.apple.lemon.cauportalcrawlertest.activity.caufsm;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,7 +18,6 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.R;
-import test.apple.lemon.cauportalcrawlertest.State;
 import test.apple.lemon.cauportalcrawlertest.activity.gadget.JsWebView;
 import timber.log.Timber;
 
@@ -34,13 +33,14 @@ public class CAUFSMActivity extends Activity {
     @InjectView(R.id.popupViewLayout)
     LinearLayout popupViewLayout;
 
-    private State mState;
+    private WebViewState state;
+
     private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
         @Override
         public void onTimeout(WebView webView) {
             // todo, sub-webview 고칠 것.
-            mState.onTimeout(webView);
-            textViewForState.setText(mState.name());
+            state.onTimeout(webView);
+            textViewForState.setText(state.name());
         }
     };
     private WebViewClient webViewClient;
@@ -66,15 +66,15 @@ public class CAUFSMActivity extends Activity {
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
 
-        State.setStateListener(new State.StateListener() {
+        WebViewState.setStateListener(new WebViewState.StateListener() {
             @Override
             public void onFinalState() {
                 finish();
             }
 
             @Override
-            public void onStateChange(State changeTo) {
-                mState = changeTo;
+            public void onStateChange(WebViewState changeTo) {
+                state = changeTo;
             }
         });
 
@@ -83,9 +83,9 @@ public class CAUFSMActivity extends Activity {
     }
 
     public void start() {
-        mState = State.START;
-        mState.invoke(mainWebView);
-        textViewForState.setText(mState.name());
+        state = WebViewState.START;
+        state.invoke(mainWebView);
+        textViewForState.setText(state.name());
     }
 
     private class FSMWebChromeClient extends WebChromeClient {
@@ -94,7 +94,7 @@ public class CAUFSMActivity extends Activity {
             if (newProgress == 100) {
                 //http://stackoverflow.com/questions/12076494/onload-in-iframes-not-working-if-iframe-have-non-html-document-in-src-pdf-or-t
                 Timber.d("onProgressChanged:%s", view.getOriginalUrl());
-                mState.onProgressChanged(view);
+                state.onProgressChanged(view);
             }
         }
 
@@ -106,8 +106,8 @@ public class CAUFSMActivity extends Activity {
                 Uri uri = Uri.parse(sub);
                 String key = uri.getScheme();
                 String val = uri.getSchemeSpecificPart();
-                mState.onJsAlert(view, key, val);
-                textViewForState.setText(mState.name());
+                state.onJsAlert(view, key, val);
+                textViewForState.setText(state.name());
             }
             result.confirm();
             return true;
@@ -139,9 +139,9 @@ public class CAUFSMActivity extends Activity {
             super.onCloseWindow(window);
             popupViewLayout.removeAllViews();
             popupViewLayout.setVisibility(View.INVISIBLE);
-            mState = State.ECLASS_LIST;
-            textViewForState.setText(mState.name());
-            State.runJSPublic(mainWebView, "'close'", "close");
+            state = WebViewState.ECLASS_LIST;
+            textViewForState.setText(state.name());
+            WebViewState.runJSPublic(mainWebView, "'close'", "close");
         }
     }
 
@@ -149,9 +149,9 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onPageFinished(WebView webView, String url) {
             Timber.d("onPageFinished:%s", url);
-            //mState =
-            mState.onPageFinished(webView, webView.getUrl());
-            textViewForState.setText(mState.name());
+            //state =
+            state.onPageFinished(webView, webView.getUrl());
+            textViewForState.setText(state.name());
         }
     }
 }

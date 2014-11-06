@@ -1,4 +1,4 @@
-package test.apple.lemon.cauportalcrawlertest;
+package test.apple.lemon.cauportalcrawlertest.activity.caufsm;
 
 import android.os.Environment;
 import android.webkit.WebView;
@@ -8,12 +8,13 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
+import test.apple.lemon.cauportalcrawlertest.Pref;
 import timber.log.Timber;
 
 /**
  * Created by rino0601 on 2014. 10. 2..
  */
-public enum State {
+public enum WebViewState {
     UNKNOWN,
     START {
         @Override
@@ -226,7 +227,7 @@ public enum State {
         }
 
         @Override
-        public void onStateChange(State changeTo) {
+        public void onStateChange(WebViewState changeTo) {
             // do nothing. dummy listener.
         }
     };
@@ -252,7 +253,7 @@ public enum State {
     }
 
     public static void setStateListener(StateListener stateListener) {
-        State.stateListener = stateListener;
+        WebViewState.stateListener = stateListener;
     }
 
     public void invoke(WebView webView) {
@@ -277,6 +278,6 @@ public enum State {
     public static interface StateListener {
         void onFinalState();
 
-        void onStateChange(State changeTo); // todo rename to setState.
+        void onStateChange(WebViewState changeTo); // todo rename to setState.
     }
 }
