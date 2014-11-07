@@ -62,9 +62,11 @@ public class CAUFSMActivity extends Activity {
         popupViewLayout.setVisibility(View.VISIBLE);
 
         WebViewState.setHelper(new WebViewState.StateHelper() {
+            public int lectureMax;
             private Timer timer;
             private TimerTask task;
             private int boardIndex;
+            private int lectureIndex;
 
             @Override
             public void setState(final WebView webView, WebViewState changeTo) {
@@ -94,6 +96,31 @@ public class CAUFSMActivity extends Activity {
             @Override
             public void setBoardIndex(int newIndex) {
                 boardIndex = newIndex;
+            }
+
+            @Override
+            public void initLectureIndex() {
+                lectureIndex = 0;
+            }
+
+            @Override
+            public int getLectureIndex() {
+                return lectureIndex;
+            }
+
+            @Override
+            public void setLectureIndex(int newIndex) {
+                lectureIndex = newIndex;
+            }
+
+            @Override
+            public int getLectureMax() {
+                return lectureMax;
+            }
+
+            @Override
+            public void setLectureMax(int numberOfLecture) {
+                lectureMax = numberOfLecture;
             }
 
             private void updateTimeout(final WebView webView) {

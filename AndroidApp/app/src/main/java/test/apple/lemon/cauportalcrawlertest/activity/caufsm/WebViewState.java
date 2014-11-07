@@ -104,21 +104,28 @@ enum WebViewState {
         @Override
         public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(existTest)) {
-                int i = Integer.parseInt(android_val);
-                if (i != 0) {
-                    String script = "document.querySelector('#contentFrame').contentWindow.document" +
-                            ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
-                            + "[0].click()";
-                    // todo 적절히 입장...
-                    runJS(webView, script, "void");
-                    helper.setState(webView, LECTURE_MAIN);
+                int numberOfLecture = Integer.parseInt(android_val);
+                if (numberOfLecture != 0) {
+                    helper.setLectureMax(numberOfLecture);
+                    helper.initLectureIndex();
+                    enterLecture(webView);
                 }
             } else if (key.equals("close")) {
-                // todo 다음 강의.
-
-                // 지금은 그냥 종료.
-                helper.setState(webView, FINAL);
+                helper.setLectureIndex(helper.getLectureIndex() + 1);
+                if (helper.getLectureIndex() < helper.getLectureMax()) {
+                    enterLecture(webView);
+                } else {
+                    helper.setState(webView, FINAL);
+                }
             }
+        }
+
+        private void enterLecture(WebView webView) {
+            String script = "document.querySelector('#contentFrame').contentWindow.document" +
+                    ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
+                    + "[" + helper.getLectureIndex() + "].click()";
+            runJS(webView, script, "void");
+            helper.setState(webView, LECTURE_MAIN);
         }
     },
     LECTURE_MAIN {
@@ -179,7 +186,9 @@ enum WebViewState {
                 try {
                     String data = String.format("<table class=\"grid_header\">%s</table>", android_val);
                     File directory = Environment.getExternalStorageDirectory();
-                    FileUtils.writeStringToFile(new File(directory, "table[" + helper.getBoardIndex() + "].html"), data);
+                    String fileName = "table[" + helper.getLectureIndex() + "," + helper.getBoardIndex() + "].html";
+                    File file = new File(directory, fileName);
+                    FileUtils.writeStringToFile(file, data);
                 } catch (IOException e) {
                     Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
                 } finally {
@@ -198,27 +207,7 @@ enum WebViewState {
     /**
      * do nothing. dummy listener.
      */
-    private static StateHelper helper = new StateHelper() {
-        @Override
-        public void setState(WebView webView, WebViewState changeTo) {
-
-        }
-
-        @Override
-        public void initBoardIndex() {
-
-        }
-
-        @Override
-        public int getBoardIndex() {
-            return 0;
-        }
-
-        @Override
-        public void setBoardIndex(int newIndex) {
-
-        }
-    };
+    private static StateHelper helper = new DummyStateHelper();
 
     private static void openURL(WebView webView, String url) {
         webView.loadUrl(url);
@@ -280,6 +269,16 @@ enum WebViewState {
 
         void setBoardIndex(int newIndex);
 
+        void initLectureIndex();
+
+        int getLectureIndex();
+
+        void setLectureIndex(int newIndex);
+
+        int getLectureMax();
+
+        void setLectureMax(int numberOfLecture);
     }
+
 }
 // fixme, public들 전부 package local로...
