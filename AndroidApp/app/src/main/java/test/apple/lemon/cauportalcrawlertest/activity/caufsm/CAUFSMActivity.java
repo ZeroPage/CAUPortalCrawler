@@ -15,10 +15,12 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.R;
-import test.apple.lemon.cauportalcrawlertest.activity.gadget.JsWebView;
 import timber.log.Timber;
 
 
@@ -28,21 +30,13 @@ public class CAUFSMActivity extends Activity {
     TextView textViewForState;
 
     @InjectView(R.id.webView)
-    JsWebView mainWebView;
+    WebView mainWebView;
 
     @InjectView(R.id.popupViewLayout)
     LinearLayout popupViewLayout;
 
     private WebViewState state;
 
-    private JsWebView.OnTimeoutListener onTimeoutListener = new JsWebView.OnTimeoutListener() {
-        @Override
-        public void onTimeout(WebView webView) {
-            state.onTimeout(webView);
-            textViewForState.setText(state.name());
-            initLayout();
-        }
-    };
     private WebViewClient webViewClient;
     private WebChromeClient webChromeClient;
 
@@ -58,7 +52,6 @@ public class CAUFSMActivity extends Activity {
 
         mainWebView.setWebViewClient(webViewClient);
         mainWebView.setWebChromeClient(webChromeClient);
-        mainWebView.setOnTimeoutListener(onTimeoutListener);
         WebSettings mainSettings = mainWebView.getSettings();
         mainSettings.setJavaScriptEnabled(true);
         mainSettings.setSupportMultipleWindows(true);
@@ -67,6 +60,9 @@ public class CAUFSMActivity extends Activity {
         popupViewLayout.setVisibility(View.VISIBLE);
 
         WebViewState.setStateListener(new WebViewState.StateListener() {
+            private Timer timer;
+            private TimerTask task;
+
             @Override
             public void onStartState() {
                 textViewForState.setText(state.name());
@@ -79,8 +75,29 @@ public class CAUFSMActivity extends Activity {
             }
 
             @Override
-            public void onStateChange(WebViewState changeTo) {
+            public void onStateChange(final WebView webView, WebViewState changeTo) {
                 state = changeTo;
+
+                if (task != null) {
+                    task.cancel();
+                }
+                if (timer != null) {
+                    timer.cancel();
+                    timer.purge();
+                }
+                timer = new Timer();
+                task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        webView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                state.onTimeout(webView);
+                            }
+                        });
+                    }
+                };
+                timer.schedule(task, 15 * 1000); //15sec
             }
         });
 
@@ -88,6 +105,12 @@ public class CAUFSMActivity extends Activity {
         // todo network state check.
         WebViewState.start(mainWebView);
     }
+
+    private void initLayout() {
+        popupViewLayout.removeAllViews();
+        popupViewLayout.setVisibility(View.INVISIBLE);
+    }
+
     private class FSMWebChromeClient extends WebChromeClient {
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
@@ -116,7 +139,7 @@ public class CAUFSMActivity extends Activity {
         @Override
         public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             Context baseContext = getBaseContext();
-            JsWebView popupView = new JsWebView(baseContext);
+            WebView popupView = new WebView(baseContext);
             popupView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             popupViewLayout.removeAllViews();
             popupViewLayout.setVisibility(View.VISIBLE);
@@ -124,7 +147,6 @@ public class CAUFSMActivity extends Activity {
 
             popupView.setWebViewClient(webViewClient);
             popupView.setWebChromeClient(webChromeClient);
-            popupView.setOnTimeoutListener(onTimeoutListener);
             WebSettings popupSettings = popupView.getSettings();
             popupSettings.setJavaScriptEnabled(true);
 
@@ -142,11 +164,6 @@ public class CAUFSMActivity extends Activity {
             initLayout();
             WebViewState.runJSPublic(mainWebView, "'close'", "close");
         }
-    }
-
-    private void initLayout() {
-        popupViewLayout.removeAllViews();
-        popupViewLayout.setVisibility(View.INVISIBLE);
     }
 
     private class FSMWebViewClient extends WebViewClient {
