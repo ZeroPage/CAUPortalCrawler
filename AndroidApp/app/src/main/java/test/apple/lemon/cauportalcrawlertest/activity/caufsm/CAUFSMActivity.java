@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -59,25 +61,42 @@ public class CAUFSMActivity extends Activity {
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
 
-        WebViewState.setStateListener(new WebViewState.StateListener() {
+        WebViewState.setHelper(new WebViewState.StateHelper() {
             private Timer timer;
             private TimerTask task;
+            private int boardIndex;
 
             @Override
-            public void onStartState() {
-                textViewForState.setText(state.name());
-                initLayout();
-            }
-
-            @Override
-            public void onFinalState() {
-                finish();
-            }
-
-            @Override
-            public void onStateChange(final WebView webView, WebViewState changeTo) {
+            public void setState(final WebView webView, WebViewState changeTo) {
+                updateTimeout(webView);
                 state = changeTo;
+                switch (state) {
+                    case START:
+                        initLayout();
+                        break;
+                    case FINAL:
+                        finish();
+                        break;
+                }
+                textViewForState.setText(state.name());
+            }
 
+            @Override
+            public void initBoardIndex() {
+                boardIndex = 0;
+            }
+
+            @Override
+            public int getBoardIndex() {
+                return boardIndex;
+            }
+
+            @Override
+            public void setBoardIndex(int newIndex) {
+                boardIndex = newIndex;
+            }
+
+            private void updateTimeout(final WebView webView) {
                 if (task != null) {
                     task.cancel();
                 }
@@ -101,12 +120,15 @@ public class CAUFSMActivity extends Activity {
             }
         });
 
-
         // todo network state check.
         WebViewState.start(mainWebView);
     }
 
     private void initLayout() {
+        CookieSyncManager.createInstance(this);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.removeAllCookie();
+
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.INVISIBLE);
     }
@@ -130,7 +152,6 @@ public class CAUFSMActivity extends Activity {
                 String key = uri.getScheme();
                 String val = uri.getSchemeSpecificPart();
                 state.onJsAlert(view, key, val);
-                textViewForState.setText(state.name());
             }
             result.confirm();
             return true;
@@ -170,9 +191,7 @@ public class CAUFSMActivity extends Activity {
         @Override
         public void onPageFinished(WebView webView, String url) {
             Timber.d("onPageFinished:%s", url);
-            //state =
             state.onPageFinished(webView, webView.getUrl());
-            textViewForState.setText(state.name());
         }
     }
 }

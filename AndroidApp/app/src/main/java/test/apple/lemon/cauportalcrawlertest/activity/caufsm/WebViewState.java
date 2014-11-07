@@ -24,10 +24,10 @@ enum WebViewState {
         @Override
         public void onPageFinished(WebView webView, String url) {
             if (url.startsWith("http://portal.cau.ac.kr/_layouts/Cau/Member/Login.aspx")) {
-                stateListener.onStateChange(webView, LOGIN);
+                helper.setState(webView, LOGIN);
                 LOGIN.invoke(webView);
             } else if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
-                stateListener.onStateChange(webView, MAIN);
+                helper.setState(webView, MAIN);
                 MAIN.invoke(webView);
             }
         }
@@ -45,7 +45,7 @@ enum WebViewState {
         @Override
         public void onPageFinished(WebView webView, String url) {
             if (url.startsWith("http://portal.cau.ac.kr/pages/mydefault.aspx")) {
-                stateListener.onStateChange(webView, MAIN);
+                helper.setState(webView, MAIN);
                 MAIN.invoke(webView);
             }
         }
@@ -61,7 +61,7 @@ enum WebViewState {
         @Override
         public void onPageFinished(WebView webView, String url) {
             if (url.startsWith(nextUrl)) {
-                stateListener.onStateChange(webView, ECLASS);
+                helper.setState(webView, ECLASS);
                 ECLASS.invoke(webView);
             }
         }
@@ -79,18 +79,18 @@ enum WebViewState {
         @Override
         public void onPageFinished(WebView webView, String url) {
             if (url.startsWith(nextUrl)) {
-                stateListener.onStateChange(webView, ECLASS_LIST);
+                helper.setState(webView, ECLASS_LIST);
                 ECLASS_LIST.invoke(webView);
             }
         }
     },
     ECLASS_LIST {
 
-        private final String tag = "infomationCourse_body_tbody"; // todo, rename and rewrite tag.
+        private final String existTest = "existTest";
 
         @Override
         public void invoke(WebView webView) {
-            Timber.d("just wait.");
+            Timber.d("just wait." + webView.getUrl());
         }
 
         @Override
@@ -98,12 +98,12 @@ enum WebViewState {
             String script = "document.querySelector('#contentFrame').contentWindow.document" +
                     ".querySelectorAll('#infomationCourse_body_tbody > tr > td:first-child > nobr')"
                     + ".length";
-            runJS(webView, script, tag);
+            runJS(webView, script, existTest);
         }
 
         @Override
         public void onJsAlert(WebView webView, String key, String android_val) {
-            if (key.equals(tag)) {
+            if (key.equals(existTest)) {
                 int i = Integer.parseInt(android_val);
                 if (i != 0) {
                     String script = "document.querySelector('#contentFrame').contentWindow.document" +
@@ -111,22 +111,19 @@ enum WebViewState {
                             + "[0].click()";
                     // todo 적절히 입장...
                     runJS(webView, script, "void");
-                    stateListener.onStateChange(webView, LECTURE_MAIN);
+                    helper.setState(webView, LECTURE_MAIN);
                 }
             } else if (key.equals("close")) {
                 // todo 다음 강의.
 
                 // 지금은 그냥 종료.
-                stateListener.onFinalState();
-                stateListener.onStateChange(webView, FINAL);
+                helper.setState(webView, FINAL);
             }
         }
     },
     LECTURE_MAIN {
         private final String boardExist = "boardIdExist";
         private final String boardEnter = "boardEnter";
-
-        private int boardIndex = 0;
 
         @Override
         public void onProgressChanged(WebView webView) {
@@ -141,18 +138,18 @@ enum WebViewState {
             if (key.equals(boardExist)) {
                 if (Boolean.parseBoolean(android_val)) {
                     //init
-                    boardIndex = 0;
+                    helper.initBoardIndex();
                     enterBoard(webView);
                 }
-            } else if (key.equals(boardEnter)) { // load 되길 기다린다.
-                runJS(webView, "" + boardIndex, LECTURE_CRAWL.name()); // fixme key.
-                stateListener.onStateChange(webView, LECTURE_CRAWL);
+            } else if (key.equals(boardEnter)) {
+                helper.setState(webView, LECTURE_CRAWL);
+                runJS(webView, "'touch'", LECTURE_CRAWL.name());
             } else if (key.equals(this.name())) {
-                boardIndex++;
-                if (boardIndex < 6) {
+                helper.setBoardIndex(helper.getBoardIndex() + 1);
+                if (helper.getBoardIndex() < 6) {
                     enterBoard(webView);
                 } else {
-                    stateListener.onStateChange(webView, ECLASS_LIST);
+                    helper.setState(webView, ECLASS_LIST);
                     runJS(webView, "document.querySelector('#imgClose').click();", "see_WebChromeClient.onClose");
                 }
             }
@@ -169,15 +166,12 @@ enum WebViewState {
             // 7 학습관리 // 안 해
             String script = "document.querySelector('#menuFrame').contentWindow.document" +
                     ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr > td > div > div.depth3_out')"
-                    + "[" + boardIndex + "].click()";
-            // todo 적절히 입장...
+                    + "[" + helper.getBoardIndex() + "].click()";
             runJS(webView, script, boardEnter);
         }
     },
     LECTURE_CRAWL {
         private final String crawling = "crawling";
-
-        private String boardIndex = "unknown";
 
         @Override
         public void onJsAlert(WebView webView, String key, String android_val) {
@@ -185,16 +179,14 @@ enum WebViewState {
                 try {
                     String data = String.format("<table class=\"grid_header\">%s</table>", android_val);
                     File directory = Environment.getExternalStorageDirectory();
-                    FileUtils.writeStringToFile(new File(directory, "table[" + boardIndex + "].html"), data);
+                    FileUtils.writeStringToFile(new File(directory, "table[" + helper.getBoardIndex() + "].html"), data);
                 } catch (IOException e) {
                     Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
                 } finally {
-                    stateListener.onStateChange(webView, LECTURE_MAIN);
+                    helper.setState(webView, LECTURE_MAIN);
                     runJS(webView, "'next'", LECTURE_MAIN.name());
                 }
             } else if (key.equals(this.name())) {
-                // set Index
-                boardIndex = android_val;
                 String script = "document.querySelector('#contentFrame').contentWindow.document" +
                         ".querySelector('table.grid_header').innerHTML";
                 runJS(webView, script, crawling, 5000);
@@ -202,20 +194,29 @@ enum WebViewState {
         }
     },
     FINAL;
-    private static StateListener stateListener = new StateListener() {
+
+    /**
+     * do nothing. dummy listener.
+     */
+    private static StateHelper helper = new StateHelper() {
         @Override
-        public void onStartState() {
+        public void setState(WebView webView, WebViewState changeTo) {
 
         }
 
         @Override
-        public void onFinalState() {
-            // do nothing. dummy listener.
+        public void initBoardIndex() {
+
         }
 
         @Override
-        public void onStateChange(WebView webView, WebViewState changeTo) {
-            // do nothing. dummy listener.
+        public int getBoardIndex() {
+            return 0;
+        }
+
+        @Override
+        public void setBoardIndex(int newIndex) {
+
         }
     };
 
@@ -243,8 +244,13 @@ enum WebViewState {
         runJS(webView, script, tag);
     }
 
-    public static void setStateListener(StateListener stateListener) {
-        WebViewState.stateListener = stateListener;
+    public static void setHelper(StateHelper helper) {
+        WebViewState.helper = helper;
+    }
+
+    public static void start(WebView webView) {
+        helper.setState(webView, START);
+        START.invoke(webView);
     }
 
     public void invoke(WebView webView) {
@@ -265,18 +271,15 @@ enum WebViewState {
         start(webView);
     }
 
-    public static void start(WebView webView) {
-        stateListener.onStateChange(webView, START);
-        START.invoke(webView);
-        stateListener.onStartState();
-    }
+    public static interface StateHelper {
+        void setState(WebView webView, WebViewState changeTo);
 
-    public static interface StateListener {
-        void onStartState();
+        void initBoardIndex();
 
-        void onFinalState();
+        int getBoardIndex();
 
-        void onStateChange(WebView webView, WebViewState changeTo); // todo rename to setState.
+        void setBoardIndex(int newIndex);
+
     }
 }
 // fixme, public들 전부 package local로...
