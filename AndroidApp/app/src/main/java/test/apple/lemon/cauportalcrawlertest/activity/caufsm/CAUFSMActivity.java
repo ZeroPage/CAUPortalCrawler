@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
@@ -152,6 +153,7 @@ public class CAUFSMActivity extends Activity {
     }
 
     private void initLayout() {
+        // todo, 여기서 state index들 다시 초기화 해줘야지;
         CookieSyncManager.createInstance(this);
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.removeAllCookie();
@@ -211,6 +213,11 @@ public class CAUFSMActivity extends Activity {
             textViewForState.setText(state.name());
             initLayout();
             WebViewState.runJSPublic(mainWebView, "'close'", "close");
+        }
+
+        @Override
+        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            return super.onConsoleMessage(consoleMessage);
         }
     }
 

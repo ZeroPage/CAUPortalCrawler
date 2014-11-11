@@ -142,7 +142,7 @@ enum WebViewState {
             String script = "document.querySelector('#menuFrame').contentWindow.document" +
                     ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr:nth-child(1) > td > div > div')"
                     + "!= null";
-            runJS(webView, script, boardExist);
+            runJS(webView, script, boardExist, 100);
         }
 
         @Override
@@ -179,26 +179,41 @@ enum WebViewState {
             String script = "document.querySelector('#menuFrame').contentWindow.document" +
                     ".querySelectorAll('#repeat5_1_repeat6 > table > tbody > tr > td > div > div.depth3_out')"
                     + "[" + helper.getBoardIndex() + "].click()";
-            runJS(webView, script, boardEnter);
+            runJS(webView, script, boardEnter, 100);
         }
     },
     LECTURE_CRAWL {
         private final String crawling = "crawling";
+        private final String ping = "ping";
+
+        @Override
+        public void onProgressChanged(WebView webView) {
+            ping(webView);
+        }
+
+        private void ping(WebView webView) {
+            String script = "document.querySelector('#contentFrame').contentWindow.document" +
+                    ".querySelector('table.grid_header>tbody').children.length";
+            runJS(webView, script, ping);
+        }
 
         @Override
         public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(crawling)) {
                 try {
                     Context context = webView.getContext();
-                    String html = String.format("<table class=\"grid_header\">%s</table>", android_val);
+                    String html = String.format("<table><tbody>%s</tbody></table>", android_val);
                     Parser parser = ParserFactory.createParser(helper.getBoardIndex());
                     // todo, 여기서 callback 만들어 넣어서 crawling 다시시도하게 만들 수도 있다. (만 시간관계상 나중에하자)
                     // todo, 파싱하다 깨닳은건데, 페이지 넘겨야한다. 시발.
                     // todo, 넘길지 말지는 callback을 통해서 구해야 할 것 같다. 스벌.. 따라서 parser에 context 넘겨야 할지도.
-                    List<EClassContent> contents =  parser.parse(html);
-                    for (EClassContent content : contents) {
-                        content.setLecture(helper.getLectureIndex());
+                    if (helper.getLectureIndex() == 2 && helper.getBoardIndex() == 0) {
+                        List<EClassContent> contents = parser.parse(html);
+                        for (EClassContent content : contents) {
+                            content.setLecture(helper.getLectureIndex());
+                        }
                     }
+
                     // todo, android ormlite.
 
 
@@ -213,10 +228,19 @@ enum WebViewState {
                     helper.setState(webView, LECTURE_MAIN);
                     runJS(webView, "'next'", LECTURE_MAIN.name());
                 }
+            } else if (key.equals(ping)) {
+                if (Integer.parseInt(android_val) != 11) {
+                    ping(webView);
+                } else {
+                    String script = "document.querySelector('#contentFrame').contentWindow.document" +
+                            ".querySelector('table.grid_header>tbody').innerHTML";
+                    runJS(webView, script, crawling, 300);
+                }
             } else if (key.equals(this.name())) {
-                String script = "document.querySelector('#contentFrame').contentWindow.document" +
-                        ".querySelector('table.grid_header').innerHTML";
-                runJS(webView, script, crawling, 5000);
+                ping(webView);
+//                String script = "document.querySelector('#contentFrame').contentWindow.document" +
+//                        ".querySelector('table.grid_header').innerHTML";
+//                runJS(webView, script, crawling, 5000);
             }
         }
     },
