@@ -18,12 +18,15 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.R;
+import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
+import test.apple.lemon.cauportalcrawlertest.model.TempSC;
 import timber.log.Timber;
 
 
@@ -122,6 +125,14 @@ public class CAUFSMActivity extends Activity {
             @Override
             public void setLectureMax(int numberOfLecture) {
                 lectureMax = numberOfLecture;
+            }
+
+            @Override
+            public boolean storeResult(List<EClassContent> contents) {
+                // todo, android ormlite.
+                // 지금은... 임시로 메모리에 넣고, 진행.
+                TempSC.getInstance().addAll(contents);
+                return false; // 일단 false...
             }
 
             private void updateTimeout(final WebView webView) {

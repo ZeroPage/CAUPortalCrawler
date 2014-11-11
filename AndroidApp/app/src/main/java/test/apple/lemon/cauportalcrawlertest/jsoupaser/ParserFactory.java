@@ -4,7 +4,7 @@ package test.apple.lemon.cauportalcrawlertest.jsoupaser;
  * Created by rino0601 on 2014. 11. 10..
  */
 public class ParserFactory {
-    public static Parser createParser(int boardIndex) {
+    public static CAUParser createParser(int boardIndex) {
         switch (boardIndex) {
             case NoticeParser.BOARD_INDEX: // 공지사항
                 return new NoticeParser();

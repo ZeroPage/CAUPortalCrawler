@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight">
+
+
+    <ImageView
+        android:id="@+id/isReadImageView"
+        android:layout_width="?android:attr/listPreferredItemHeight"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/categoryTextView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/categoryTextView"
+        android:layout_below="@+id/categoryTextView"
+        android:layout_toEndOf="@+id/isReadImageView"
+        android:layout_toRightOf="@+id/isReadImageView"
+        android:ellipsize="middle"
+        android:padding="2dp"
+        android:singleLine="true"
+        android:text="Content Title"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/categoryTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/isReadImageView"
+        android:layout_toRightOf="@+id/isReadImageView"
+        android:ellipsize="middle"
+        android:padding="2dp"
+        android:singleLine="true"
+        android:text="Lecture Name > board name"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+</RelativeLayout>

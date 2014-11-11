@@ -1,6 +1,5 @@
 package test.apple.lemon.cauportalcrawlertest.activity.caufsm;
 
-import android.content.Context;
 import android.os.Environment;
 import android.webkit.WebView;
 
@@ -11,14 +10,13 @@ import java.io.IOException;
 import java.util.List;
 
 import test.apple.lemon.cauportalcrawlertest.Pref;
-import test.apple.lemon.cauportalcrawlertest.jsoupaser.Parser;
+import test.apple.lemon.cauportalcrawlertest.activity.contentlist.ContentListActivity;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParseException;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.ParserFactory;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 import timber.log.Timber;
 
-/**
- * Created by rino0601 on 2014. 10. 2..
- */
 enum WebViewState {
     START {
         @Override
@@ -120,7 +118,8 @@ enum WebViewState {
                 if (helper.getLectureIndex() < helper.getLectureMax()) {
                     enterLecture(webView);
                 } else {
-                    helper.setState(webView, FINAL);
+                    //helper.setState(webView, FINAL);
+                    ContentListActivity.start(webView.getContext().getApplicationContext());
                 }
             }
         }
@@ -201,27 +200,28 @@ enum WebViewState {
         public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(crawling)) {
                 try {
-                    Context context = webView.getContext();
                     String html = String.format("<table><tbody>%s</tbody></table>", android_val);
-                    Parser parser = ParserFactory.createParser(helper.getBoardIndex());
-                    // todo, 여기서 callback 만들어 넣어서 crawling 다시시도하게 만들 수도 있다. (만 시간관계상 나중에하자)
-                    // todo, 파싱하다 깨닳은건데, 페이지 넘겨야한다. 시발.
-                    // todo, 넘길지 말지는 callback을 통해서 구해야 할 것 같다. 스벌.. 따라서 parser에 context 넘겨야 할지도.
-                    if (helper.getLectureIndex() == 2 && helper.getBoardIndex() == 0) {
-                        List<EClassContent> contents = parser.parse(html);
-                        for (EClassContent content : contents) {
-                            content.setLecture(helper.getLectureIndex());
-                        }
-                    }
-
-                    // todo, android ormlite.
-
 
                     // test.
                     File directory = Environment.getExternalStorageDirectory();
                     String fileName = "table[" + helper.getLectureIndex() + "," + helper.getBoardIndex() + "].html";
                     File file = new File(directory, fileName);
                     FileUtils.writeStringToFile(file, html);
+                    try {
+                        CAUParser parser = ParserFactory.createParser(helper.getBoardIndex());
+                        List<EClassContent> contents = parser.parse(html);
+                        for (EClassContent content : contents) {
+                            content.setLecture(helper.getLectureIndex());
+                        }
+
+                        boolean isNeedMore = helper.storeResult(contents);
+                        if (isNeedMore) {
+                            // todo, 파싱하다 깨닳은건데, 페이지 넘겨야한다. 시발.
+                            // todo more state or js need...
+                        }
+                    } catch (CAUParseException ignored) {
+                        // todo, 일단 무시.
+                    }
                 } catch (IOException e) {
                     Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
                 } finally {
@@ -320,6 +320,8 @@ enum WebViewState {
         int getLectureMax();
 
         void setLectureMax(int numberOfLecture);
+
+        boolean storeResult(List<EClassContent> contents);
     }
 
 }

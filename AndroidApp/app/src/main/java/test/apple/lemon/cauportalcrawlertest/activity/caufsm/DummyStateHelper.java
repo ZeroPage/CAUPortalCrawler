@@ -2,6 +2,10 @@ package test.apple.lemon.cauportalcrawlertest.activity.caufsm;
 
 import android.webkit.WebView;
 
+import java.util.List;
+
+import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
+
 /**
  * Created by rino0601 on 2014. 11. 7..
  */
@@ -49,5 +53,10 @@ class DummyStateHelper implements WebViewState.StateHelper {
     @Override
     public void setLectureMax(int numberOfLecture) {
 
+    }
+
+    @Override
+    public boolean storeResult(List<EClassContent> contents) {
+        return false;
     }
 }

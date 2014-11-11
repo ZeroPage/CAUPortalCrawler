@@ -5,9 +5,10 @@ package test.apple.lemon.cauportalcrawlertest.model;
  */
 public class EClassContent {
     // todo, 등록일이 글을 수정하면 바뀐다고 한다. 이걸 통해 글수정을 감지 할 수도 있으니 들고 있어야 할지도...
+    // todo, 위의 기능을 구현 할 거면 HashMap으로...
     private int lecture;
     private int board;
-    private int itemindex;
+    private int itemIndex;
     private String title;
     private boolean isAlreadyRead = false;
 
@@ -16,12 +17,12 @@ public class EClassContent {
     }
 
 
-    public int getItemindex() {
-        return itemindex;
+    public int getItemIndex() {
+        return itemIndex;
     }
 
-    public void setItemindex(int itemindex) {
-        this.itemindex = itemindex;
+    public void setItemIndex(int itemIndex) {
+        this.itemIndex = itemIndex;
     }
 
     public int getLecture() {
