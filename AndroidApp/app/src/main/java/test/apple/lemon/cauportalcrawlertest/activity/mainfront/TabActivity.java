@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment.ContentListFragment;
+import test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment.PrefIndexFragment;
 
 public class TabActivity extends ActionBarActivity {
     private HashMap<Class<? extends Fragment>, TabItem> fragments = new HashMap<Class<? extends Fragment>, TabItem>();
@@ -21,14 +22,16 @@ public class TabActivity extends ActionBarActivity {
         // android.R.id.content as the container for each fragment <-####
 
         // setup action bar for tabs
+        //todo may : 스크롤 탭 구현.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowTitleEnabled(true);
 
             TabItem[] tabItems = new TabItem[]{
                     getTabItem(ContentListFragment.class, "최근 EClass", R.drawable.ic_launcher),
+                    getTabItem(PrefIndexFragment.class, "설정", R.drawable.ic_launcher),
             };
 
             for (TabItem item : tabItems) {
@@ -44,6 +47,11 @@ public class TabActivity extends ActionBarActivity {
         } else {
             throw new IllegalStateException("NO_ACTION_BAR");
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     private synchronized TabItem getTabItem(Class<? extends Fragment> aClass, String title, int icon) {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="?android:attr/listPreferredItemHeightLarge">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center|left"
+        android:padding="15dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="00.place_holder"
+        android:id="@+id/title"
+        android:drawableRight="@drawable/ic_action_next_item"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true" />
+</RelativeLayout>

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.List;
 
 import test.apple.lemon.cauportalcrawlertest.Pref;
-import test.apple.lemon.cauportalcrawlertest.activity.contentlist.ContentListActivity;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParseException;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.ParserFactory;
@@ -118,8 +117,7 @@ enum WebViewState {
                 if (helper.getLectureIndex() < helper.getLectureMax()) {
                     enterLecture(webView);
                 } else {
-                    //helper.setState(webView, FINAL);
-                    ContentListActivity.start(webView.getContext().getApplicationContext());
+                    helper.setState(webView, FINAL);
                 }
             }
         }

@@ -7,4 +7,6 @@
     <string name="title_activity_content_list">ContentListActivity</string>
     <string name="title_activity_tab">TabActivity</string>
 
+    <string name="send_email_developer">개발자에게 이메일 보내기</string>
+
 </resources>

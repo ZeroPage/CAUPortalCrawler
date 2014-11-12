@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -33,7 +35,7 @@ public class ContentListFragment extends Fragment {
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_content_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_content_list, container, false);
         ButterKnife.inject(this, rootView);
         try {
             RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(getActivity()).getContentsDAO();
@@ -44,6 +46,12 @@ public class ContentListFragment extends Fragment {
             ignored.printStackTrace();
         }
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.content_list, menu);
     }
 
     static class Adapter extends OrmLiteAdapter<EClassContent, Integer> { // 일단 지금은 reload를 지원하지 않음.
@@ -61,7 +69,7 @@ public class ContentListFragment extends Fragment {
             if (view != null) {
                 holder = (ViewHolder) view.getTag();
             } else {
-                view = LayoutInflater.from(context).inflate(R.layout.item_content_list, parent, false);
+                view = LayoutInflater.from(context).inflate(R.layout.adapter_content_list, parent, false);
                 holder = new ViewHolder(view);
                 view.setTag(holder);
             }
