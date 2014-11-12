@@ -12,12 +12,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.PreparedQuery;
+
+import java.sql.SQLException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
-import test.apple.lemon.cauportalcrawlertest.model.TempSC;
 
 public class ContentListActivity extends Activity {
 
@@ -56,9 +60,16 @@ public class ContentListActivity extends Activity {
                 return view;
             }
         };
-        TempSC instance = TempSC.getInstance();
-        adapter.addAll(instance);
-        listView.setAdapter(adapter);
+
+        try {
+            RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(getApplicationContext()).getContentsDAO();
+            PreparedQuery<EClassContent> query = dao.queryBuilder().orderBy(EClassContent.DATETIME_FIELD, false).prepare();
+            adapter.addAll(dao.query(query));
+        } catch (SQLException ignored) {
+            ignored.printStackTrace();
+        }finally {
+            listView.setAdapter(adapter);
+        }
     }
 
     static class ViewHolder {

@@ -1,12 +1,7 @@
 package test.apple.lemon.cauportalcrawlertest.jsoupaser;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 
@@ -15,32 +10,22 @@ import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
  */
 public class HomeworkParser extends CAUParser {
     public static final int BOARD_INDEX = 2;
+    public static final String DUE_DATE = "dueDate";
+    public static final String EXTEND_DATE = "extendDate";
+    public static final String STATUS = "status";
 
     @Override
-    public List<EClassContent> parse(String html) throws CAUParseException {
-        ArrayList<EClassContent> list = new ArrayList<EClassContent>();
+    protected void setMetaData(EClassContent content, Elements nobr) {
+        Element dueDate = nobr.get(2);
+        Element extendDate = nobr.get(3);
+        Element status = nobr.get(4);
+        content.put(DUE_DATE, dueDate.text());
+        content.put(EXTEND_DATE, extendDate.text());
+        content.put(STATUS, status.text());
+    }
 
-        Document parse = Jsoup.parse(html);
-        Elements select = parse.select("tr.grid_body_row");
-        if (select.size() != 11) {
-            throw new CAUParseException("HTML has Special Characters like sharp (#)");
-        }
-        select = select.not(".w2grid_hidedRow");
-        for (Element element : select) {
-            Elements nobr = element.select("nobr");
-            Element itemIndex = nobr.get(0);
-            Element title = nobr.get(1);
-            //Element DueDate = nobr.get(2);
-            //Element ExtendDate = nobr.get(3);
-            //Element Status = nobr.get(4);
-
-            EClassContent content = new EClassContent();
-            content.setItemIndex(Integer.parseInt(itemIndex.text()));
-            content.setTitle(title.text());
-            content.setBoard(BOARD_INDEX);
-            list.add(content);
-        }
-
-        return list;
+    @Override
+    protected int getBoardIndex() {
+        return BOARD_INDEX;
     }
 }

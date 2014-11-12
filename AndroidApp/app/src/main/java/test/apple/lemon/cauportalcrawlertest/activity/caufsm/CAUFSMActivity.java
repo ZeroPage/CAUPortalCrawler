@@ -2,6 +2,7 @@ package test.apple.lemon.cauportalcrawlertest.activity.caufsm;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
@@ -18,15 +19,19 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
-import test.apple.lemon.cauportalcrawlertest.model.TempSC;
+import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteHelper;
 import timber.log.Timber;
 
 
@@ -45,6 +50,12 @@ public class CAUFSMActivity extends Activity {
 
     private WebViewClient webViewClient;
     private WebChromeClient webChromeClient;
+
+    public static void start(Context context) {
+        Intent intent = new Intent(context, CAUFSMActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,9 +140,27 @@ public class CAUFSMActivity extends Activity {
 
             @Override
             public boolean storeResult(List<EClassContent> contents) {
-                // todo, android ormlite.
-                // 지금은... 임시로 메모리에 넣고, 진행.
-                TempSC.getInstance().addAll(contents);
+                // todo test.
+                OrmLiteHelper helper = AppDelegate.getHelper(getApplicationContext());
+                RuntimeExceptionDao<EClassContent, Integer> contentsDAO = helper.getContentsDAO();
+                Integer minIndex = Integer.MAX_VALUE;
+                for (EClassContent content : contents) {
+                    int lecture = content.getLecture();
+                    int board = content.getBoard();
+                    int itemIndex = content.getIndex();
+                    Map<String, Object> queryMap = EClassContent.queryMap(lecture, board, itemIndex);
+                    List<EClassContent> storedItem = contentsDAO.queryForFieldValues(queryMap);
+                    if (storedItem.isEmpty()) {
+                        contentsDAO.create(content);
+                    } else {
+                        EClassContent stored = storedItem.get(0);
+                        if (!content.equals(stored)) { // 뭔가 바뀐 경우.
+                            contentsDAO.update(content);
+                        }
+                    }
+                    minIndex = minIndex < itemIndex ? minIndex : itemIndex;
+                    // todo, return true를 만들기 위해 minIndex를 활용할 것.
+                }
                 return false; // 일단 false...
             }
 
