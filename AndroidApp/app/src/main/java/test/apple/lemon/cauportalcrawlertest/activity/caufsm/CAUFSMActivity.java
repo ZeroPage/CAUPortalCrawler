@@ -31,7 +31,9 @@ import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
+import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
 import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteHelper;
+import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
 import timber.log.Timber;
 
 
@@ -50,6 +52,7 @@ public class CAUFSMActivity extends Activity {
 
     private WebViewClient webViewClient;
     private WebChromeClient webChromeClient;
+    private LocalProperties localProperties;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, CAUFSMActivity.class);
@@ -76,6 +79,7 @@ public class CAUFSMActivity extends Activity {
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
 
+        localProperties = PrefHelper.getInstance(getBaseContext()).getPrefDao().loadData();
         WebViewState.setHelper(new WebViewState.StateHelper() {
             public int lectureMax;
             private Timer timer;
@@ -162,6 +166,21 @@ public class CAUFSMActivity extends Activity {
                     // todo, return true를 만들기 위해 minIndex를 활용할 것.
                 }
                 return false; // 일단 false...
+            }
+
+            @Override
+            public String getPortalId() {
+                return localProperties.getPortalId();
+            }
+
+            @Override
+            public String getPassword() {
+                return localProperties.getPassword();
+            }
+
+            @Override
+            public boolean isAllowedBoard(int boardIndex) {
+                return localProperties.getChecked(boardIndex);
             }
 
             private void updateTimeout(final WebView webView) {

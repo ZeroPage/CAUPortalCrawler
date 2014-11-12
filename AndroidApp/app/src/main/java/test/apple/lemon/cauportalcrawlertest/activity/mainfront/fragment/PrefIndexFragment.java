@@ -123,7 +123,6 @@ public class PrefIndexFragment extends Fragment {
                 }
                 break;
             }
-            //todo impl
         }
 
         static class Item {

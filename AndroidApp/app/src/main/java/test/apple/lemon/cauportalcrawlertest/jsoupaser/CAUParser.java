@@ -15,6 +15,8 @@ import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
  * Created by rino0601 on 2014. 11. 10..
  */
 public abstract class CAUParser {
+    public static int MAX_BOARD_BOUND = 6;
+
     public List<EClassContent> parse(String html) throws CAUParseException {
         ArrayList<EClassContent> list = new ArrayList<EClassContent>();
 

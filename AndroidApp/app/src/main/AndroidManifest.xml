@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="test.apple.lemon.cauportalcrawlertest" >
+    package="test.apple.lemon.cauportalcrawlertest">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -10,13 +10,15 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light" >
+        android:theme="@style/Theme.AppCompat.Light">
         <activity
             android:name="test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUFSMActivity"
-            android:label="@string/app_name" />
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
         <activity
             android:name="test.apple.lemon.cauportalcrawlertest.activity.mainfront.TabActivity"
-            android:label="@string/title_activity_tab" >
+            android:label="@string/title_activity_tab"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +30,8 @@
         <activity
             android:name=".activity.BasicPrefActivity"
             android:label="@string/title_activity_login"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateVisible">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="test.apple.lemon.cauportalcrawlertest.activity.mainfront.TabActivity" />

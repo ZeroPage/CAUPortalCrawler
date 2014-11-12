@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import test.apple.lemon.cauportalcrawlertest.Pref;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParseException;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.CAUParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.ParserFactory;
@@ -38,8 +37,8 @@ enum WebViewState {
         @Override
         public void invoke(WebView webView) {
             StringBuilder jsBuilder = new StringBuilder()
-                    .append(String.format("document.querySelector('#txtUserID').value='%s';", Pref.ID))
-                    .append(String.format("document.querySelector('#txtUserPwd').value='%s';", Pref.PASSWD));
+                    .append(String.format("document.querySelector('#txtUserID').value='%s';", helper.getPortalId()))
+                    .append(String.format("document.querySelector('#txtUserPwd').value='%s';", helper.getPassword()));
             jsBuilder.append("document.querySelector('#btnLogin').click();");
             runJS(webView, jsBuilder.toString(), "void");
         }
@@ -155,9 +154,13 @@ enum WebViewState {
                 runJS(webView, "'touch'", LECTURE_CRAWL.name());
             } else if (key.equals(this.name())) {
                 helper.setBoardIndex(helper.getBoardIndex() + 1);
-                if (helper.getBoardIndex() < 6) {
-                    enterBoard(webView);
-                } else {
+                if (helper.getBoardIndex() < CAUParser.MAX_BOARD_BOUND)
+                    if (helper.isAllowedBoard(helper.getBoardIndex())) {
+                        enterBoard(webView);
+                    } else {
+                        runJS(webView, "'next'", this.name());
+                    }
+                else {
                     helper.setState(webView, ECLASS_LIST);
                     runJS(webView, "document.querySelector('#imgClose').click();", "see_WebChromeClient.onClose");
                 }
@@ -320,6 +323,12 @@ enum WebViewState {
         void setLectureMax(int numberOfLecture);
 
         boolean storeResult(List<EClassContent> contents);
+
+        String getPortalId();
+
+        String getPassword();
+
+        boolean isAllowedBoard(int boardIndex);
     }
 
 }

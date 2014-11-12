@@ -1,38 +1,97 @@
 package test.apple.lemon.cauportalcrawlertest.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.TimePicker;
+
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.InjectViews;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import test.apple.lemon.cauportalcrawlertest.R;
+import test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUFSMActivity;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.HomeworkParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.LectureContentsParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.NoticeParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.QnAParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.SharedDataParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.TeamProjectParser;
+import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
+import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
 
 /**
  * A login screen that offers login via email/password.
  */
 public class BasicPrefActivity extends ActionBarActivity {
-
     public static final int REQUEST_CODE = 1001;
     // UI references.
     @InjectView(R.id.portalIdEditText)
     EditText portalIdEditText;
     @InjectView(R.id.passwordEditText)
     EditText passwordEditText;
+    @InjectViews({R.id.noticeCheckBox, R.id.hwCheckBox, R.id.sharedDataCheckBox, R.id.teamCheckBox, R.id.qnACheckBox, R.id.lectureContentsCheckBox})
+    List<CheckBox> checkBoxes;
+    @InjectView(R.id.syncTimePicker)
+    TimePicker syncTimePicker;
+
+    private LocalProperties localProperties;
+
+
+    public static Intent getStartIntent(Activity activity) {
+        return new Intent(activity, BasicPrefActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_basic_pref);
         ButterKnife.inject(this);
         // Show the Up button in the action bar.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        PrefHelper.PrefDao<LocalProperties> prefDao = PrefHelper.getInstance(this).getPrefDao();
+        localProperties = prefDao.loadData();
+        portalIdEditText.setText(localProperties.getPortalId());
+        passwordEditText.setText(localProperties.getPassword());
+        ButterKnife.apply(checkBoxes, new ButterKnife.Action<CheckBox>() {
+            @Override
+            public void apply(CheckBox view, int index) {
+                switch (view.getId()) {
+                    case R.id.noticeCheckBox:
+                        view.setChecked(localProperties.getChecked(NoticeParser.BOARD_INDEX));
+                        break;
+                    case R.id.hwCheckBox:
+                        view.setChecked(localProperties.getChecked(HomeworkParser.BOARD_INDEX));
+                        break;
+                    case R.id.sharedDataCheckBox:
+                        view.setChecked(localProperties.getChecked(SharedDataParser.BOARD_INDEX));
+                        break;
+                    case R.id.teamCheckBox:
+                        view.setChecked(localProperties.getChecked(TeamProjectParser.BOARD_INDEX));
+                        break;
+                    case R.id.qnACheckBox:
+                        view.setChecked(localProperties.getChecked(QnAParser.BOARD_INDEX));
+                        break;
+                    case R.id.lectureContentsCheckBox:
+                        view.setChecked(localProperties.getChecked(LectureContentsParser.BOARD_INDEX));
+                        break;
+                }
+            }
+        });
+        syncTimePicker.setCurrentHour(localProperties.getScheduledHour());
+        syncTimePicker.setCurrentMinute(localProperties.getScheduledMinute());
     }
 
     @OnClick(R.id.savePrefButton)
@@ -42,14 +101,14 @@ public class BasicPrefActivity extends ActionBarActivity {
         passwordEditText.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = portalIdEditText.getText().toString();
+        String portalId = portalIdEditText.getText().toString();
         String password = passwordEditText.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
+        // Check for a valid
+        if (TextUtils.isEmpty(portalId)) {
             portalIdEditText.setError(getString(R.string.error_field_required));
             focusView = portalIdEditText;
             cancel = true;
@@ -65,13 +124,58 @@ public class BasicPrefActivity extends ActionBarActivity {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // todo prompt dlg
-            finish();
+            PrefHelper.PrefDao<LocalProperties> prefDao = PrefHelper.getInstance(this).getPrefDao();
+            localProperties.setPortalId(portalId);
+            localProperties.setPassword(password);
+            localProperties.setScheduledHour(syncTimePicker.getCurrentHour());
+            localProperties.setScheduledMinute(syncTimePicker.getCurrentMinute());
+            prefDao.saveData(localProperties);
+
+            AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
+            alt_bld.setMessage("지금 즉시 동기화를 하시겠습니까?").setCancelable(
+                    false).setPositiveButton("Ok",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            CAUFSMActivity.start(BasicPrefActivity.this);
+                            dialog.dismiss();
+                        }
+                    }).setNegativeButton("Cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            setResult(Activity.RESULT_OK);
+                            finish();
+                        }
+                    });
+            AlertDialog alert = alt_bld.create();
+            alert.setTitle("동기화");
+            alert.setIcon(R.drawable.ic_launcher);
+            alert.show();
         }
     }
 
-    public static Intent getStartIntent(Activity activity) {
-        return new Intent(activity,BasicPrefActivity.class);
+    @OnCheckedChanged({R.id.noticeCheckBox, R.id.hwCheckBox, R.id.sharedDataCheckBox, R.id.teamCheckBox, R.id.qnACheckBox, R.id.lectureContentsCheckBox})
+    void onCheckedChanged(CompoundButton view, boolean isChecked) {
+        switch (view.getId()) {
+            case R.id.noticeCheckBox:
+                localProperties.setChecked(NoticeParser.BOARD_INDEX, isChecked);
+                break;
+            case R.id.hwCheckBox:
+                localProperties.setChecked(HomeworkParser.BOARD_INDEX, isChecked);
+                break;
+            case R.id.sharedDataCheckBox:
+                localProperties.setChecked(SharedDataParser.BOARD_INDEX, isChecked);
+                break;
+            case R.id.teamCheckBox:
+                localProperties.setChecked(TeamProjectParser.BOARD_INDEX, isChecked);
+                break;
+            case R.id.qnACheckBox:
+                localProperties.setChecked(QnAParser.BOARD_INDEX, isChecked);
+                break;
+            case R.id.lectureContentsCheckBox:
+                localProperties.setChecked(LectureContentsParser.BOARD_INDEX, isChecked);
+                break;
+        }
     }
 }
 

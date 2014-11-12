@@ -59,4 +59,19 @@ class DummyStateHelper implements WebViewState.StateHelper {
     public boolean storeResult(List<EClassContent> contents) {
         return false;
     }
+
+    @Override
+    public String getPortalId() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
+    @Override
+    public boolean isAllowedBoard(int boardIndex) {
+        return false;
+    }
 }

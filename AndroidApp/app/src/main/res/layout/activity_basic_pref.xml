@@ -59,10 +59,11 @@
                         android:id="@+id/noticeCheckBox"
                         android:layout_width="match_parent"
                         android:layout_height="?android:attr/listPreferredItemHeightSmall"
+                        android:enabled="false"
                         android:text="과목공지사항" />
 
                     <CheckBox
-                        android:id="@+id/CheckBox"
+                        android:id="@+id/lectureContentsCheckBox"
                         android:layout_width="match_parent"
                         android:layout_height="?android:attr/listPreferredItemHeightSmall"
                         android:enabled="false"
@@ -94,7 +95,7 @@
                         android:text="공유자료실" />
 
                     <CheckBox
-                        android:id="@+id/QnACheckBox"
+                        android:id="@+id/qnACheckBox"
                         android:layout_width="match_parent"
                         android:layout_height="?android:attr/listPreferredItemHeightSmall"
                         android:text="과목Q&amp;A" />

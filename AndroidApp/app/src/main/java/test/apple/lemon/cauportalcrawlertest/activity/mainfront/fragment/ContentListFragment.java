@@ -22,8 +22,16 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.HomeworkParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.LectureContentsParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.NoticeParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.QnAParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.SharedDataParser;
+import test.apple.lemon.cauportalcrawlertest.jsoupaser.TeamProjectParser;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
+import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
 import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteAdapter;
+import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
 
 /**
  * Created by rino0601 on 2014. 11. 12..
@@ -57,10 +65,12 @@ public class ContentListFragment extends Fragment {
     static class Adapter extends OrmLiteAdapter<EClassContent, Integer> { // 일단 지금은 reload를 지원하지 않음.
 
         private final Context context;
+        private final LocalProperties localProperties;
 
         public Adapter(Context context, RuntimeExceptionDao<EClassContent, Integer> contentsDAO, PreparedQuery<EClassContent> preparedQuery) {
             super(contentsDAO, preparedQuery);
             this.context = context;
+            localProperties = PrefHelper.getInstance(context).getPrefDao().loadData();
         }
 
         @Override
@@ -75,11 +85,34 @@ public class ContentListFragment extends Fragment {
             }
 
             EClassContent item = getItem(position);
-            holder.categoryTextView.setText(item.getLecture() + " > " + item.getBoard());
+            holder.categoryTextView.setText(lectureName(item.getLecture()) + " > " + boardName(item.getBoard()));
             holder.titleTextView.setText(item.getTitle());
             int res = item.isAlreadyRead() ? R.drawable.ic_action_read : R.drawable.ic_action_unread;
             Glide.with(context).load(res).into(holder.isReadImageView);
             return view;
+        }
+
+        private String boardName(int board) {
+            switch (board) {
+                case NoticeParser.BOARD_INDEX:
+                    return "공지사항";
+                case LectureContentsParser.BOARD_INDEX:
+                    return "강의컨텐츠";
+                case HomeworkParser.BOARD_INDEX:
+                    return "과제방";
+                case TeamProjectParser.BOARD_INDEX:
+                    return "팀프로젝트";
+                case SharedDataParser.BOARD_INDEX:
+                    return "공유자료실";
+                case QnAParser.BOARD_INDEX:
+                    return "과목Q&A";
+                default:
+                    return "기타게시판";
+            }
+        }
+
+        private String lectureName(int lecture) {
+            return localProperties.getLectureName(lecture);
         }
 
         static class ViewHolder {
