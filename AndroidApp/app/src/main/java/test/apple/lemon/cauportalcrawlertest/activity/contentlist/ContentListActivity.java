@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.R;
@@ -49,7 +51,8 @@ public class ContentListActivity extends Activity {
                 EClassContent item = getItem(position);
                 holder.categoryTextView.setText(item.getLecture() + " > " + item.getBoard());
                 holder.titleTextView.setText(item.getTitle());
-                // todo image view with glide...
+                int res = item.isAlreadyRead() ? R.drawable.ic_action_read : R.drawable.ic_action_unread;
+                Glide.with(ContentListActivity.this).load(res).into(holder.isReadImageView);
                 return view;
             }
         };
@@ -67,7 +70,7 @@ public class ContentListActivity extends Activity {
         TextView categoryTextView;
 
         public ViewHolder(View view) {
-            ButterKnife.inject(this,view);
+            ButterKnife.inject(this, view);
         }
     }
 
