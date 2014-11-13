@@ -20,47 +20,57 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
-import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteHelper;
 import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
 import timber.log.Timber;
 
 
-public class CAUFSMActivity extends Activity {
+public class CAUWebActivity extends Activity {
 
+    private static final String KEY_LECTURE_INDEX = "lectureIndex";
+    private static final String KEY_BOARD_INDEX = "boardIndex";
+    private static final String KEY_ITEM_INDEX = "itemIndex";
+    @InjectView(R.id.theLayout)
+    RelativeLayout theLayout;
     @InjectView(R.id.textViewForState)
     TextView textViewForState;
-
     @InjectView(R.id.webView)
     WebView mainWebView;
-
     @InjectView(R.id.popupViewLayout)
     LinearLayout popupViewLayout;
-
     private WebViewState state;
-
     private WebViewClient webViewClient;
     private WebChromeClient webChromeClient;
     private LocalProperties localProperties;
+    private int lectureIndex;
+    private int boardIndex;
+    private int itemIndex;
+    private AlertDialog dialog;
 
-    public static void start(Context context) {
-        Intent intent = new Intent(context, CAUFSMActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    public static void start(Context context, int lectureIndex, int boardIndex, int itemIndex) {
+        Intent intent = new Intent(context, CAUWebActivity.class);
+        intent.putExtra(KEY_LECTURE_INDEX, lectureIndex);
+        intent.putExtra(KEY_BOARD_INDEX, boardIndex);
+        intent.putExtra(KEY_ITEM_INDEX, itemIndex);
         context.startActivity(intent);
+    }
+
+    private void initFromIntent() {
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        assert extras != null;
+        lectureIndex = extras.getInt(KEY_LECTURE_INDEX);
+        boardIndex = extras.getInt(KEY_BOARD_INDEX);
+        itemIndex = extras.getInt(KEY_ITEM_INDEX);
     }
 
     @Override
@@ -69,26 +79,22 @@ public class CAUFSMActivity extends Activity {
         Timber.plant(new Timber.DebugTree());
         setContentView(R.layout.activity_cau_fsm);
         ButterKnife.inject(this);
+        initFromIntent();
 
+        theLayout.setVisibility(View.VISIBLE);
         webViewClient = new FSMWebViewClient();
         webChromeClient = new FSMWebChromeClient();
-
         mainWebView.setWebViewClient(webViewClient);
         mainWebView.setWebChromeClient(webChromeClient);
         WebSettings mainSettings = mainWebView.getSettings();
         mainSettings.setJavaScriptEnabled(true);
         mainSettings.setSupportMultipleWindows(true);
-
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
 
         localProperties = PrefHelper.getInstance(getBaseContext()).getPrefDao().loadData();
         WebViewState.setHelper(new WebViewState.StateHelper() {
             public int lectureMax;
-            private Timer timer;
-            private TimerTask task;
-            private int boardIndex;
-            private int lectureIndex;
 
             @Override
             public void setState(final WebView webView, WebViewState changeTo) {
@@ -99,7 +105,7 @@ public class CAUFSMActivity extends Activity {
                         initLayout();
                         break;
                     case FINAL:
-                        finish();
+                        dialog.dismiss();
                         break;
                 }
                 textViewForState.setText(state.name());
@@ -117,7 +123,7 @@ public class CAUFSMActivity extends Activity {
 
             @Override
             public int getBoardIndexNext() {
-                return ++boardIndex;
+                return boardIndex;
             }
 
             @Override
@@ -147,27 +153,7 @@ public class CAUFSMActivity extends Activity {
 
             @Override
             public boolean storeResult(List<EClassContent> contents) {
-                OrmLiteHelper helper = AppDelegate.getHelper(getApplicationContext());
-                RuntimeExceptionDao<EClassContent, Integer> contentsDAO = helper.getContentsDAO();
-                Integer minIndex = Integer.MAX_VALUE;
-                for (EClassContent content : contents) {
-                    int lecture = content.getLecture();
-                    int board = content.getBoard();
-                    int itemIndex = content.getIndex();
-                    Map<String, Object> queryMap = EClassContent.queryMap(lecture, board, itemIndex);
-                    List<EClassContent> storedItem = contentsDAO.queryForFieldValues(queryMap);
-                    if (storedItem.isEmpty()) {
-                        contentsDAO.create(content);
-                    } else {
-                        EClassContent stored = storedItem.get(0);
-                        if (!content.equals(stored)) { // 뭔가 바뀐 경우.
-                            contentsDAO.update(content);
-                        }
-                    }
-                    minIndex = minIndex < itemIndex ? minIndex : itemIndex;
-                    // todo, return true를 만들기 위해 minIndex를 활용할 것.
-                }
-                return false; // 일단 false...
+                throw new IllegalStateException("something wrong!");
             }
 
             @Override
@@ -182,45 +168,26 @@ public class CAUFSMActivity extends Activity {
 
             @Override
             public boolean isAllowedBoard(int boardIndex) {
-                return localProperties.getChecked(boardIndex);
-            }
-
-            @Override
-            public boolean isHaveToCrawl() {
                 return true;
             }
 
             @Override
+            public boolean isHaveToCrawl() {
+                return false;
+            }
+
+            @Override
             public int getItemIndex() {
-                throw new IllegalStateException("something wrong");
+                return itemIndex;
             }
 
             private void updateTimeout(final WebView webView) {
-                if (task != null) {
-                    task.cancel();
-                }
-                if (timer != null) {
-                    timer.cancel();
-                    timer.purge();
-                }
-                timer = new Timer();
-                task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        webView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                state.onTimeout(webView);
-                            }
-                        });
-                    }
-                };
-                timer.schedule(task, 15 * 1000); //15sec
+                //do nothing.
             }
         });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Base_Theme_AppCompat_Light));
-        AlertDialog dialog = builder
+        dialog = builder
                 .setMessage("E-Class를 읽는 중입니다. 잠시만 기다려주세요.")
                 .setCancelable(false)
                 .setPositiveButton("중단하기", new DialogInterface.OnClickListener() {

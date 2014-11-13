@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
+import test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUWebActivity;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.HomeworkParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.LectureContentsParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.NoticeParser;
@@ -50,6 +52,7 @@ public class ContentListFragment extends Fragment {
             PreparedQuery<EClassContent> query = dao.queryBuilder().orderBy(EClassContent.DATETIME_FIELD, false).prepare();
             Adapter adapter = new Adapter(getActivity(), dao, query);
             listView.setAdapter(adapter);
+            listView.setOnItemClickListener(adapter);
         } catch (SQLException ignored) {
             ignored.printStackTrace();
         }
@@ -62,7 +65,7 @@ public class ContentListFragment extends Fragment {
         inflater.inflate(R.menu.content_list, menu);
     }
 
-    static class Adapter extends OrmLiteAdapter<EClassContent, Integer> { // 일단 지금은 reload를 지원하지 않음.
+    static class Adapter extends OrmLiteAdapter<EClassContent, Integer> implements AdapterView.OnItemClickListener { // 일단 지금은 reload를 지원하지 않음.
 
         private final Context context;
         private final LocalProperties localProperties;
@@ -113,6 +116,12 @@ public class ContentListFragment extends Fragment {
 
         private String lectureName(int lecture) {
             return localProperties.getLectureName(lecture);
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            EClassContent item = getItem(position);
+            CAUWebActivity.start(context, item.getLecture(), item.getBoard(), item.getIndex());
         }
 
         static class ViewHolder {

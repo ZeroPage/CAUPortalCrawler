@@ -26,11 +26,6 @@ class DummyStateHelper implements WebViewState.StateHelper {
     }
 
     @Override
-    public void setBoardIndex(int newIndex) {
-
-    }
-
-    @Override
     public void initLectureIndex() {
 
     }
@@ -73,5 +68,20 @@ class DummyStateHelper implements WebViewState.StateHelper {
     @Override
     public boolean isAllowedBoard(int boardIndex) {
         return false;
+    }
+
+    @Override
+    public boolean isHaveToCrawl() {
+        return false;
+    }
+
+    @Override
+    public int getItemIndex() {
+        return 0;
+    }
+
+    @Override
+    public int getBoardIndexNext() {
+        return 0;
     }
 }

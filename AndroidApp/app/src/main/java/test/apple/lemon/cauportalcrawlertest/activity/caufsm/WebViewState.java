@@ -153,9 +153,9 @@ enum WebViewState {
                 helper.setState(webView, LECTURE_CRAWL);
                 runJS(webView, "'touch'", LECTURE_CRAWL.name());
             } else if (key.equals(this.name())) {
-                helper.setBoardIndex(helper.getBoardIndex() + 1);
-                if (helper.getBoardIndex() < CAUParser.MAX_BOARD_BOUND)
-                    if (helper.isAllowedBoard(helper.getBoardIndex())) {
+                int boardIndex = helper.getBoardIndexNext();
+                if (boardIndex < CAUParser.MAX_BOARD_BOUND)
+                    if (helper.isAllowedBoard(boardIndex)) {
                         enterBoard(webView);
                     } else {
                         runJS(webView, "'next'", this.name());
@@ -200,34 +200,49 @@ enum WebViewState {
         @Override
         public void onJsAlert(WebView webView, String key, String android_val) {
             if (key.equals(crawling)) {
-                try {
-                    String html = String.format("<table><tbody>%s</tbody></table>", android_val);
-
-                    // test.
-                    File directory = Environment.getExternalStorageDirectory();
-                    String fileName = "table[" + helper.getLectureIndex() + "," + helper.getBoardIndex() + "].html";
-                    File file = new File(directory, fileName);
-                    FileUtils.writeStringToFile(file, html);
+                if (helper.isHaveToCrawl()) {
                     try {
-                        CAUParser parser = ParserFactory.createParser(helper.getBoardIndex());
-                        List<EClassContent> contents = parser.parse(html);
-                        for (EClassContent content : contents) {
-                            content.setLecture(helper.getLectureIndex());
-                        }
+                        String html = String.format("<table><tbody>%s</tbody></table>", android_val);
 
-                        boolean isNeedMore = helper.storeResult(contents);
-                        if (isNeedMore) {
-                            // todo, 파싱하다 깨닳은건데, 페이지 넘겨야한다. 시발.
-                            // todo more state or js need...
+                        // test.
+                        File directory = Environment.getExternalStorageDirectory();
+                        String fileName = "table[" + helper.getLectureIndex() + "," + helper.getBoardIndex() + "].html";
+                        File file = new File(directory, fileName);
+                        FileUtils.writeStringToFile(file, html);
+                        try {
+                            CAUParser parser = ParserFactory.createParser(helper.getBoardIndex());
+                            List<EClassContent> contents = parser.parse(html);
+                            for (EClassContent content : contents) {
+                                content.setLecture(helper.getLectureIndex());
+                            }
+
+                            boolean isNeedMore = helper.storeResult(contents);
+                            if (isNeedMore) {
+                                // todo, 파싱하다 깨닳은건데, 페이지 넘겨야한다. 시발.
+                                // todo more state or js need...
+                            }
+                        } catch (CAUParseException ignored) {
+                            // todo, 일단 무시.
                         }
-                    } catch (CAUParseException ignored) {
-                        // todo, 일단 무시.
+                    } catch (IOException e) {
+                        Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
+                    } finally {
+                        helper.setState(webView, LECTURE_MAIN);
+                        runJS(webView, "'next'", LECTURE_MAIN.name());
                     }
-                } catch (IOException e) {
-                    Timber.e(e, "FILE IO EXCEPTION: At LECTURE_CRAWL ");
-                } finally {
-                    helper.setState(webView, LECTURE_MAIN);
-                    runJS(webView, "'next'", LECTURE_MAIN.name());
+                } else {
+                    int itemIndex = helper.getItemIndex();
+                    int lectureMax = helper.getLectureMax();
+                    helper.setLectureIndex(lectureMax + 1); // to terminate state machine.
+                    helper.setState(webView, ECLASS_LIST);
+
+                    String script = "Array.prototype.filter.call(" +
+                            "document.querySelector('#contentFrame').contentWindow.document" +
+                            ".querySelectorAll('table.grid_header>tbody>tr:not(.w2grid_hidedRow)')," +
+                            "function (val){" +
+                            "return val.querySelectorAll('nobr')[0].innerText==" + itemIndex + ";" +
+                            "})[0].querySelectorAll('nobr')[1].click();";
+                    runJS(webView, script, "close");
                 }
             } else if (key.equals(ping)) {
                 if (Integer.parseInt(android_val) != 11) {
@@ -310,8 +325,6 @@ enum WebViewState {
 
         int getBoardIndex();
 
-        void setBoardIndex(int newIndex);
-
         void initLectureIndex();
 
         int getLectureIndex();
@@ -329,6 +342,12 @@ enum WebViewState {
         String getPassword();
 
         boolean isAllowedBoard(int boardIndex);
+
+        boolean isHaveToCrawl();
+
+        int getItemIndex();
+
+        int getBoardIndexNext();
     }
 
 }
