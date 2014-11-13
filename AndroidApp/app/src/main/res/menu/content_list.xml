@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    <item
+        android:id="@+id/mark_as_read"
+        android:icon="@drawable/ic_action_read"
+        android:title="@string/mark_as_read"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/crawl_now"
+        android:icon="@drawable/ic_action_refresh"
+        android:title="@string/crawl_now"
+        app:showAsAction="always" />
 </menu>

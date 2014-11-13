@@ -77,21 +77,24 @@ public class CAUIntentService extends IntentService {
                 List<EClassContent> eClassContents = dao.queryForFieldValues(map);
                 int size = eClassContents.size();
 
-                NotificationManager mNotificationManager = (NotificationManager)
-                        intentService.getSystemService(Context.NOTIFICATION_SERVICE);
-                PendingIntent contentIntent = PendingIntent.getActivity(intentService, 0,
-                        new Intent(intentService, TabActivity.class), 0);
-                NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(intentService)
-                                .setAutoCancel(true)
-                                .setContentIntent(contentIntent)
-                                .setSmallIcon(R.drawable.ic_launcher)
-                                .setContentTitle(intentService.getResources().getString(R.string.app_name))
-                                .setContentText(String.format("안 읽은 CAU E-Class 알림이 %,d개 있습니다.", size));
-                Notification notification = mBuilder.build();
-                notification.flags |= Notification.DEFAULT_SOUND;
+                if (size != 0) {
+                    NotificationManager mNotificationManager = (NotificationManager)
+                            intentService.getSystemService(Context.NOTIFICATION_SERVICE);
+                    PendingIntent contentIntent = PendingIntent.getActivity(intentService, 0,
+                            new Intent(intentService, TabActivity.class), 0);
+                    NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(intentService)
+                                    .setAutoCancel(true)
+                                    .setContentIntent(contentIntent)
+                                    .setSmallIcon(R.drawable.ic_launcher)
+                                    .setContentTitle(intentService.getResources().getString(R.string.app_name))
+                                    .setContentText(String.format("안 읽은 CAU E-Class 알림이 %,d개 있습니다.", size));
+                    Notification notification = mBuilder.build();
+                    notification.flags |= Notification.DEFAULT_SOUND;
 
-                mNotificationManager.notify(NOTIFICATION_ID, notification);
+                    mNotificationManager.notify(NOTIFICATION_ID, notification);
+                }
+
             }
         }
 

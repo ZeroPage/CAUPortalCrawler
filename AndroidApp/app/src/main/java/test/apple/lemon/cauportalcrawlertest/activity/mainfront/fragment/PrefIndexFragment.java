@@ -66,6 +66,12 @@ public class PrefIndexFragment extends Fragment {
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.send_email_develper).getIcon().setAlpha(255);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.send_email_develper: {
@@ -131,8 +137,8 @@ public class PrefIndexFragment extends Fragment {
                 break;
                 case 2: {
                     AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
-                    builder.setTitle("경고(취소 할 수 없는 작업)")
-                            .setIcon(R.drawable.ic_launcher)
+                    builder.setTitle(R.string.waring_can_not_undo)
+                            .setIcon(R.drawable.ic_action_warning)
                             .setMessage("앱을 초기 상태로 되돌리겠습니까?")
                             .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                                 @Override

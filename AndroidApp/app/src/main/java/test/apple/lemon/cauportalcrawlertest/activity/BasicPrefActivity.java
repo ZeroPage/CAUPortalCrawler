@@ -141,7 +141,9 @@ public class BasicPrefActivity extends ActionBarActivity {
             CAUIntentService.INTENT.REGISTER_ALARM.setAlarm(this, dateTime.toDate());
 
             AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
-            alt_bld.setMessage("지금 즉시 동기화를 하시겠습니까?").setCancelable(
+            alt_bld.setTitle("동기화")
+                    .setIcon(R.drawable.ic_action_about)
+                    .setMessage("지금 즉시 동기화를 하시겠습니까?").setCancelable(
                     false).setPositiveButton("Ok",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -155,11 +157,7 @@ public class BasicPrefActivity extends ActionBarActivity {
                             dialog.dismiss();
                             finish();
                         }
-                    });
-            AlertDialog alert = alt_bld.create();
-            alert.setTitle("동기화");
-            alert.setIcon(R.drawable.ic_launcher);
-            alert.show();
+                    }).show();
         }
     }
 

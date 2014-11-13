@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">CAUPortalCrawlerTest</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_content_list">ContentListActivity</string>
-    <string name="title_activity_tab">TabActivity</string>
-
+    <string name="app_name">CAUtion</string>
     <string name="send_email_developer">개발자에게 이메일 보내기</string>
+    <string name="mark_as_read">모두 읽은것으로 표시하기</string>
+    <string name="crawl_now">지금 갱신하기</string>
+    <string name="waring_can_not_undo">경고(취소 할 수 없는 작업)</string>
 
 </resources>

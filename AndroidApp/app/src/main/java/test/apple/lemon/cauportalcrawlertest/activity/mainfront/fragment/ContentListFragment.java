@@ -1,12 +1,15 @@
 package test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -19,6 +22,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 
@@ -39,6 +43,8 @@ import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
 import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteAdapter;
 import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
+import test.apple.lemon.cauportalcrawlertest.service.CAUIntentService;
+import timber.log.Timber;
 
 /**
  * Created by rino0601 on 2014. 11. 12..
@@ -52,6 +58,12 @@ public class ContentListFragment extends Fragment {
     RelativeLayout tutorialLayout;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true); // ActionBar Item을 사용하기 위함.
+    }
+
+    @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_content_list, container, false);
         ButterKnife.inject(this, rootView);
@@ -61,6 +73,10 @@ public class ContentListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        reloadAdapter();
+    }
+
+    private void reloadAdapter() {
         try {
             RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(getActivity()).getContentsDAO();
             PreparedQuery<EClassContent> query = dao.queryBuilder().orderBy(EClassContent.DATETIME_FIELD, false).prepare();
@@ -78,6 +94,7 @@ public class ContentListFragment extends Fragment {
         } catch (SQLException ignored) {
             ignored.printStackTrace();
         }
+        getActivity().invalidateOptionsMenu();
     }
 
     @OnClick(R.id.initButton)
@@ -90,6 +107,77 @@ public class ContentListFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.content_list, menu);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        LocalProperties localProperties = PrefHelper.getInstance(getActivity()).getPrefDao().loadData();
+        boolean haveToDisable = localProperties.getPortalId().isEmpty() || localProperties.getPassword().isEmpty();
+        MenuItem markAsRead = menu.findItem(R.id.mark_as_read);
+        markAsRead.setEnabled(!haveToDisable);
+        markAsRead.getIcon().setAlpha(haveToDisable ? 130 : 255);
+        MenuItem crawlNow = menu.findItem(R.id.crawl_now);
+        crawlNow.setEnabled(!haveToDisable);
+        crawlNow.getIcon().setAlpha(haveToDisable ? 130 : 255);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.mark_as_read: {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setIcon(R.drawable.ic_action_warning)
+                        .setTitle(R.string.waring_can_not_undo)
+                        .setMessage("모든 알림을 읽음으로 표시하시겠습니까?\n(취소 할 수 없습니다.)")
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Context context = getActivity();
+                                RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(context).getContentsDAO();
+                                UpdateBuilder<EClassContent, Integer> updateBuilder = dao.updateBuilder();
+                                try {
+                                    updateBuilder.where().eq(EClassContent.ALREADY_READ_FIELD, false);
+                                    updateBuilder.updateColumnValue(EClassContent.ALREADY_READ_FIELD, true);
+                                    updateBuilder.update();
+                                } catch (SQLException e) {
+                                    Timber.e(e, "SQLException-update");
+                                }
+                                dialogInterface.dismiss();
+                                reloadAdapter();
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        }).show();
+                return true;
+            }
+            case R.id.crawl_now: {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setIcon(R.drawable.ic_action_about)
+                        .setTitle("즉시 업데이트")
+                        .setMessage("지금 즉시 동기화를 시작 할까요?")
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                                CAUIntentService.INTENT.INSTANT_START_FSM.start(getActivity());
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        }).show();
+                return true;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     static class Adapter extends OrmLiteAdapter<EClassContent, Integer> implements AdapterView.OnItemClickListener { // 일단 지금은 reload를 지원하지 않음.

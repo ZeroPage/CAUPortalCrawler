@@ -25,13 +25,14 @@ public class TabActivity extends ActionBarActivity {
         //todo may : 스크롤 탭 구현.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
+            actionBar.setIcon(R.drawable.ic_launcher);
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
             actionBar.setDisplayShowTitleEnabled(true);
 
             TabItem[] tabItems = new TabItem[]{
-                    getTabItem(ContentListFragment.class, "최근 EClass", R.drawable.ic_launcher),
-                    getTabItem(PrefIndexFragment.class, "설정", R.drawable.ic_launcher),
+                    getTabItem(ContentListFragment.class, "최근 EClass", R.drawable.ic_action_email),
+                    getTabItem(PrefIndexFragment.class, "설정", R.drawable.ic_action_settings),
             };
 
             for (TabItem item : tabItems) {
@@ -47,11 +48,6 @@ public class TabActivity extends ActionBarActivity {
         } else {
             throw new IllegalStateException("NO_ACTION_BAR");
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     private synchronized TabItem getTabItem(Class<? extends Fragment> aClass, String title, int icon) {

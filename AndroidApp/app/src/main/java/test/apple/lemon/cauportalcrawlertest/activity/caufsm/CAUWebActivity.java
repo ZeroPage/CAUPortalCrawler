@@ -195,7 +195,8 @@ public class CAUWebActivity extends Activity {
         });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Base_Theme_AppCompat_Light));
-        dialog = builder
+        dialog = builder.setTitle(R.string.app_name)
+                .setIcon(R.drawable.ic_action_about)
                 .setMessage("E-Class를 읽는 중입니다. 잠시만 기다려주세요.")
                 .setCancelable(false)
                 .setPositiveButton("중단하기", new DialogInterface.OnClickListener() {
@@ -204,12 +205,8 @@ public class CAUWebActivity extends Activity {
                         dialogInterface.dismiss();
                         finish();
                     }
-                }).create();
-        dialog.setTitle(R.string.app_name);
-        dialog.setIcon(R.drawable.ic_launcher);
-        dialog.show();
+                }).show();
 
-        // todo network state check.
         WebViewState.start(mainWebView);
     }
 
