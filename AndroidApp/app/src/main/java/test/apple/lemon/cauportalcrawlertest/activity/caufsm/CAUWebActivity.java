@@ -95,6 +95,7 @@ public class CAUWebActivity extends Activity {
         localProperties = PrefHelper.getInstance(getBaseContext()).getPrefDao().loadData();
         WebViewState.setHelper(new WebViewState.StateHelper() {
             public int lectureMax;
+            private int deltaForLecture = 0;
 
             @Override
             public void setState(final WebView webView, WebViewState changeTo) {
@@ -113,7 +114,7 @@ public class CAUWebActivity extends Activity {
 
             @Override
             public void initBoardIndex() {
-                boardIndex = 0;
+                // do nothing.
             }
 
             @Override
@@ -127,8 +128,19 @@ public class CAUWebActivity extends Activity {
             }
 
             @Override
+            public int getLectureIndexNext() {
+                return ++deltaForLecture + lectureIndex;
+            }
+
+            @Override
+            public void init() {
+                initFromIntent();
+                deltaForLecture = 0;
+            }
+
+            @Override
             public void initLectureIndex() {
-                lectureIndex = 0;
+                // do nothing.
             }
 
             @Override
@@ -136,10 +148,6 @@ public class CAUWebActivity extends Activity {
                 return lectureIndex;
             }
 
-            @Override
-            public void setLectureIndex(int newIndex) {
-                lectureIndex = newIndex;
-            }
 
             @Override
             public int getLectureMax() {

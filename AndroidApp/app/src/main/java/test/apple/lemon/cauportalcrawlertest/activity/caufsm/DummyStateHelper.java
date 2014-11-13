@@ -12,12 +12,10 @@ import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 class DummyStateHelper implements WebViewState.StateHelper {
     @Override
     public void setState(WebView webView, WebViewState changeTo) {
-
     }
 
     @Override
     public void initBoardIndex() {
-
     }
 
     @Override
@@ -27,17 +25,11 @@ class DummyStateHelper implements WebViewState.StateHelper {
 
     @Override
     public void initLectureIndex() {
-
     }
 
     @Override
     public int getLectureIndex() {
         return 0;
-    }
-
-    @Override
-    public void setLectureIndex(int newIndex) {
-
     }
 
     @Override
@@ -47,7 +39,6 @@ class DummyStateHelper implements WebViewState.StateHelper {
 
     @Override
     public void setLectureMax(int numberOfLecture) {
-
     }
 
     @Override
@@ -83,5 +74,14 @@ class DummyStateHelper implements WebViewState.StateHelper {
     @Override
     public int getBoardIndexNext() {
         return 0;
+    }
+
+    @Override
+    public int getLectureIndexNext() {
+        return 0;
+    }
+
+    @Override
+    public void init() {
     }
 }

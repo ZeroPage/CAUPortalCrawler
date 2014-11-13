@@ -20,6 +20,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -32,6 +33,7 @@ import java.util.TimerTask;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import test.apple.lemon.cauportalcrawlertest.AppDelegate;
+import test.apple.lemon.cauportalcrawlertest.BuildConfig;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
@@ -41,6 +43,9 @@ import timber.log.Timber;
 
 
 public class CAUFSMActivity extends Activity {
+
+    @InjectView(R.id.theLayout)
+    RelativeLayout theLayout;
 
     @InjectView(R.id.textViewForState)
     TextView textViewForState;
@@ -70,15 +75,16 @@ public class CAUFSMActivity extends Activity {
         setContentView(R.layout.activity_cau_fsm);
         ButterKnife.inject(this);
 
+        if(BuildConfig.DEBUG) {
+            theLayout.setVisibility(View.VISIBLE);
+        }
         webViewClient = new FSMWebViewClient();
         webChromeClient = new FSMWebChromeClient();
-
         mainWebView.setWebViewClient(webViewClient);
         mainWebView.setWebChromeClient(webChromeClient);
         WebSettings mainSettings = mainWebView.getSettings();
         mainSettings.setJavaScriptEnabled(true);
         mainSettings.setSupportMultipleWindows(true);
-
         popupViewLayout.removeAllViews();
         popupViewLayout.setVisibility(View.VISIBLE);
 
@@ -121,6 +127,17 @@ public class CAUFSMActivity extends Activity {
             }
 
             @Override
+            public int getLectureIndexNext() {
+                return ++lectureIndex;
+            }
+
+            @Override
+            public void init() {
+                initBoardIndex();
+                initLectureIndex();
+            }
+
+            @Override
             public void initLectureIndex() {
                 lectureIndex = 0;
             }
@@ -128,11 +145,6 @@ public class CAUFSMActivity extends Activity {
             @Override
             public int getLectureIndex() {
                 return lectureIndex;
-            }
-
-            @Override
-            public void setLectureIndex(int newIndex) {
-                lectureIndex = newIndex;
             }
 
             @Override

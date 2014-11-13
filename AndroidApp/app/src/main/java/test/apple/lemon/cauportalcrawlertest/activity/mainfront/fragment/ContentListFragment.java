@@ -47,16 +47,27 @@ public class ContentListFragment extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_content_list, container, false);
         ButterKnife.inject(this, rootView);
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         try {
             RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(getActivity()).getContentsDAO();
             PreparedQuery<EClassContent> query = dao.queryBuilder().orderBy(EClassContent.DATETIME_FIELD, false).prepare();
             Adapter adapter = new Adapter(getActivity(), dao, query);
-            listView.setAdapter(adapter);
-            listView.setOnItemClickListener(adapter);
+            int count = adapter.getCount();
+            if (count != 0) {
+                listView.setAdapter(adapter);
+                listView.setOnItemClickListener(adapter);
+            } else {
+                // todo prompt login.
+            }
         } catch (SQLException ignored) {
             ignored.printStackTrace();
         }
-        return rootView;
     }
 
     @Override
@@ -122,6 +133,10 @@ public class ContentListFragment extends Fragment {
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
             EClassContent item = getItem(position);
             CAUWebActivity.start(context, item.getLecture(), item.getBoard(), item.getIndex());
+
+            item.setAlreadyRead(true);
+            AppDelegate.getHelper(context).getContentsDAO().update(item);
+            notifyDataSetChanged();
         }
 
         static class ViewHolder {

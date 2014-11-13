@@ -112,8 +112,8 @@ enum WebViewState {
                     enterLecture(webView);
                 }
             } else if (key.equals("close")) {
-                helper.setLectureIndex(helper.getLectureIndex() + 1);
-                if (helper.getLectureIndex() < helper.getLectureMax()) {
+                int lectureIndex = helper.getLectureIndexNext();
+                if (lectureIndex < helper.getLectureMax()) {
                     enterLecture(webView);
                 } else {
                     helper.setState(webView, FINAL);
@@ -232,8 +232,9 @@ enum WebViewState {
                     }
                 } else {
                     int itemIndex = helper.getItemIndex();
-                    int lectureMax = helper.getLectureMax();
-                    helper.setLectureIndex(lectureMax + 1); // to terminate state machine.
+                    while (helper.getLectureIndex() >= helper.getLectureMax()) {
+                        helper.getLectureIndexNext(); // to terminate state machine.
+                    }
                     helper.setState(webView, ECLASS_LIST);
 
                     String script = "Array.prototype.filter.call(" +
@@ -296,6 +297,7 @@ enum WebViewState {
     }
 
     public static void start(WebView webView) {
+        helper.init();
         helper.setState(webView, START);
         START.invoke(webView);
     }
@@ -329,8 +331,6 @@ enum WebViewState {
 
         int getLectureIndex();
 
-        void setLectureIndex(int newIndex);
-
         int getLectureMax();
 
         void setLectureMax(int numberOfLecture);
@@ -348,6 +348,11 @@ enum WebViewState {
         int getItemIndex();
 
         int getBoardIndexNext();
+
+        int getLectureIndexNext();
+
+        void init();
+
     }
 
 }
