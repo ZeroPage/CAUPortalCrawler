@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="test.apple.lemon.cauportalcrawlertest">
+    package="lemon.apple.caution">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -9,22 +9,22 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name="test.apple.lemon.cauportalcrawlertest.AppDelegate"
+        android:name="lemon.apple.caution.AppDelegate"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light">
         <activity
-            android:name="test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUFSMActivity"
+            android:name="lemon.apple.caution.activity.caufsm.CAUFSMActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
-            android:name="test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUWebActivity"
+            android:name="lemon.apple.caution.activity.caufsm.CAUWebActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
         <activity
-            android:name="test.apple.lemon.cauportalcrawlertest.activity.mainfront.TabActivity"
+            android:name="lemon.apple.caution.activity.mainfront.TabActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -34,19 +34,18 @@
             </intent-filter>
         </activity>
 
-        <!-- android:parentActivityName="test.apple.lemon.cauportalcrawlertest.activity.mainfront.TabActivity" -->
         <activity
-            android:name="test.apple.lemon.cauportalcrawlertest.activity.BasicPrefActivity"
+            android:name="lemon.apple.caution.activity.BasicPrefActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateVisible">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="test.apple.lemon.cauportalcrawlertest.activity.mainfront.TabActivity" />
+                android:value="lemon.apple.caution.activity.mainfront.TabActivity" />
         </activity>
 
         <service
-            android:name=".service.CAUIntentService"
+            android:name="lemon.apple.caution.service.CAUIntentService"
             android:enabled="true"
             android:exported="true" />
     </application>
