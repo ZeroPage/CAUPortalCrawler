@@ -138,6 +138,7 @@ public class BasicPrefActivity extends ActionBarActivity {
             if (dateTime.isBeforeNow()) {
                 dateTime = dateTime.plusDays(1);
             }
+            dateTime=dateTime.secondOfMinute().withMinimumValue();
             CAUIntentService.INTENT.REGISTER_ALARM.setAlarm(this, dateTime.toDate());
 
             AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);

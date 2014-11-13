@@ -110,8 +110,7 @@ public class CAUIntentService extends IntentService {
             public static void setAlarm(Context context, Date time) {
                 PendingIntent pendingIntent = getPendingIntent(context);
                 AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                alarmManager.set(AlarmManager.RTC_WAKEUP, time.getTime(), pendingIntent);
-                //alarmManager.setRepeating();
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time.getTime(), 24 * 60 * 60 * 1000, pendingIntent);
             }
 
             public static void cancelAlarm(Context context) {
