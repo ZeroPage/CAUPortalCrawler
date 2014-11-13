@@ -1,5 +1,8 @@
 package test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -18,8 +21,11 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.activity.BasicPrefActivity;
+import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
+import test.apple.lemon.cauportalcrawlertest.service.CAUIntentService;
 
 public class PrefIndexFragment extends Fragment {
 
@@ -42,6 +48,7 @@ public class PrefIndexFragment extends Fragment {
         HardCodeAdapter.Item[] items = {
                 new HardCodeAdapter.Item("기본 설정"),
                 new HardCodeAdapter.Item("강의명 설정"),
+                new HardCodeAdapter.Item("초기화"),
         };
         hardCodeAdapter = new HardCodeAdapter(this);
         hardCodeAdapter.addAll(items);
@@ -120,6 +127,29 @@ public class PrefIndexFragment extends Fragment {
                 break;
                 case 1: {
 
+                }
+                break;
+                case 2: {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
+                    builder.setTitle("경고(취소 할 수 없는 작업)")
+                            .setIcon(R.drawable.ic_launcher)
+                            .setMessage("앱을 초기 상태로 되돌리겠습니까?")
+                            .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Context context = fragment.getActivity().getApplicationContext();
+                                    AppDelegate.closeHelper(context);
+                                    CAUIntentService.INTENT.REGISTER_ALARM.cancelAlarm(context);
+                                    PrefHelper.getInstance(context).clear();
+                                    dialogInterface.dismiss();
+                                }
+                            })
+                            .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                }
+                            }).show();
                 }
                 break;
             }

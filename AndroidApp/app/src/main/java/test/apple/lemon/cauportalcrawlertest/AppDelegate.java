@@ -23,6 +23,14 @@ public class AppDelegate extends Application {
         return databaseHelper;
     }
 
+    public static synchronized void closeHelper(Context context) {
+        OpenHelperManager.releaseHelper();
+        getHelper(context).close();
+        databaseHelper = null;
+        context.deleteDatabase(OrmLiteHelper.DATABASE_NAME);
+    }
+
+
     @Override
     public void onCreate() {
         super.onCreate();

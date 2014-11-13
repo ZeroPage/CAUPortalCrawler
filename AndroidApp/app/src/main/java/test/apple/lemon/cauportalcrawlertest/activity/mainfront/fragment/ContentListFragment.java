@@ -1,6 +1,7 @@
 package test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -9,8 +10,10 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -21,8 +24,10 @@ import java.sql.SQLException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import test.apple.lemon.cauportalcrawlertest.AppDelegate;
 import test.apple.lemon.cauportalcrawlertest.R;
+import test.apple.lemon.cauportalcrawlertest.activity.BasicPrefActivity;
 import test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUWebActivity;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.HomeworkParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.LectureContentsParser;
@@ -43,6 +48,9 @@ public class ContentListFragment extends Fragment {
     @InjectView(R.id.listView)
     ListView listView;
 
+    @InjectView(R.id.tutorialLayout)
+    RelativeLayout tutorialLayout;
+
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_content_list, container, false);
@@ -53,21 +61,29 @@ public class ContentListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         try {
             RuntimeExceptionDao<EClassContent, Integer> dao = AppDelegate.getHelper(getActivity()).getContentsDAO();
             PreparedQuery<EClassContent> query = dao.queryBuilder().orderBy(EClassContent.DATETIME_FIELD, false).prepare();
             Adapter adapter = new Adapter(getActivity(), dao, query);
             int count = adapter.getCount();
             if (count != 0) {
+                listView.setVisibility(View.VISIBLE);
+                tutorialLayout.setVisibility(View.GONE);
                 listView.setAdapter(adapter);
                 listView.setOnItemClickListener(adapter);
             } else {
-                // todo prompt login.
+                listView.setVisibility(View.GONE);
+                tutorialLayout.setVisibility(View.VISIBLE);
             }
         } catch (SQLException ignored) {
             ignored.printStackTrace();
         }
+    }
+
+    @OnClick(R.id.initButton)
+    void initButtonClick(Button button) {
+        Intent startIntent = BasicPrefActivity.getStartIntent(getActivity());
+        startActivity(startIntent);
     }
 
     @Override

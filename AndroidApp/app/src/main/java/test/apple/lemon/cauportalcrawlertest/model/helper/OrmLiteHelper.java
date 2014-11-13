@@ -17,7 +17,7 @@ import timber.log.Timber;
  * Created by rino0601 on 2014. 11. 12..
  */
 public class OrmLiteHelper extends OrmLiteSqliteOpenHelper {
-    private static final String DATABASE_NAME = "orm_lite.db";
+    public static final String DATABASE_NAME = "orm_lite.db";
     private static final int DATABASE_VERSION = 1;
 
     private RuntimeExceptionDao<EClassContent, Integer> contentsDAO;

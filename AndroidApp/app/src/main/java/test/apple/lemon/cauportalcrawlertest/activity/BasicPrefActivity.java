@@ -23,7 +23,6 @@ import butterknife.InjectViews;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import test.apple.lemon.cauportalcrawlertest.R;
-import test.apple.lemon.cauportalcrawlertest.activity.caufsm.CAUFSMActivity;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.HomeworkParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.LectureContentsParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.NoticeParser;
@@ -146,14 +145,14 @@ public class BasicPrefActivity extends ActionBarActivity {
                     false).setPositiveButton("Ok",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            CAUFSMActivity.start(BasicPrefActivity.this);
+                            CAUIntentService.INTENT.INSTANT_START_FSM.start(BasicPrefActivity.this);
                             dialog.dismiss();
+                            finish();
                         }
                     }).setNegativeButton("Cancel",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            setResult(Activity.RESULT_OK);
+                            dialog.dismiss();
                             finish();
                         }
                     });

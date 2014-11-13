@@ -11,6 +11,36 @@
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/tutorialLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/initButton"
+            android:layout_width="wrap_content"
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_below="@+id/textView"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:padding="@dimen/activity_vertical_margin"
+            android:text="기본적인 설정 시작하기" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:minHeight="?android:attr/listPreferredItemHeightLarge"
+            android:text="E-Class 알림이 하나도 없습니다.\n아래의 버튼을 통해 포탈ID를 입력하여 앱을 시작할 수 있습니다."
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </RelativeLayout>
+
 
 </LinearLayout>

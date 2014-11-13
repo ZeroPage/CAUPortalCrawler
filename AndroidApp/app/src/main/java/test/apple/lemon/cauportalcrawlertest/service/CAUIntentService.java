@@ -147,5 +147,19 @@ public class CAUIntentService extends IntentService {
                 }
             }
         }
+
+        public static class INSTANT_START_FSM implements IntentServiceInterface {
+            public static void start(Context context) {
+                Intent intent = new Intent();
+                intent.setAction(INSTANT_START_FSM.class.getSimpleName());
+                intent.setClass(context, CAUIntentService.class);
+                context.startService(intent); // 일단 IntentService에게 중계.
+            }
+
+            @Override
+            public void onHandleIntent(CAUIntentService intentService, Intent intent) {
+                CAUFSMActivity.start(intentService);
+            }
+        }
     }
 }

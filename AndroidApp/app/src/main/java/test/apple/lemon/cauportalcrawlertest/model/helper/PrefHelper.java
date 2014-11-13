@@ -49,6 +49,17 @@ public class PrefHelper {
             }
         };
     }
+
+    public void clear() {
+        if (instance != null) {
+            synchronized (PrefHelper.class) {
+                if (instance != null) {
+                    mPrefs.edit().clear().commit();
+                    instance = null;
+                }
+            }
+        }
+    }
     // ------------------------ DAO 등록 하는 곳 ------------------------//
 
 
