@@ -13,6 +13,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
+import org.joda.time.DateTime;
+
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -30,6 +32,7 @@ import test.apple.lemon.cauportalcrawlertest.jsoupaser.SharedDataParser;
 import test.apple.lemon.cauportalcrawlertest.jsoupaser.TeamProjectParser;
 import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
 import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
+import test.apple.lemon.cauportalcrawlertest.service.CAUIntentService;
 
 /**
  * A login screen that offers login via email/password.
@@ -130,6 +133,13 @@ public class BasicPrefActivity extends ActionBarActivity {
             localProperties.setScheduledHour(syncTimePicker.getCurrentHour());
             localProperties.setScheduledMinute(syncTimePicker.getCurrentMinute());
             prefDao.saveData(localProperties);
+
+            DateTime dateTime = new DateTime().hourOfDay().setCopy(localProperties.getScheduledHour())
+                    .minuteOfHour().setCopy(localProperties.getScheduledMinute());
+            if (dateTime.isBeforeNow()) {
+                dateTime = dateTime.plusDays(1);
+            }
+            CAUIntentService.INTENT.REGISTER_ALARM.setAlarm(this, dateTime.toDate());
 
             AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
             alt_bld.setMessage("지금 즉시 동기화를 하시겠습니까?").setCancelable(
