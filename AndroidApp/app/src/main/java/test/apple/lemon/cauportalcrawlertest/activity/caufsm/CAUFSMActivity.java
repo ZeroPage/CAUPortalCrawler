@@ -39,6 +39,7 @@ import test.apple.lemon.cauportalcrawlertest.model.EClassContent;
 import test.apple.lemon.cauportalcrawlertest.model.LocalProperties;
 import test.apple.lemon.cauportalcrawlertest.model.helper.OrmLiteHelper;
 import test.apple.lemon.cauportalcrawlertest.model.helper.PrefHelper;
+import test.apple.lemon.cauportalcrawlertest.service.NotificationIntentService;
 import timber.log.Timber;
 
 
@@ -75,7 +76,7 @@ public class CAUFSMActivity extends Activity {
         setContentView(R.layout.activity_cau_fsm);
         ButterKnife.inject(this);
 
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             theLayout.setVisibility(View.VISIBLE);
         }
         webViewClient = new FSMWebViewClient();
@@ -106,6 +107,7 @@ public class CAUFSMActivity extends Activity {
                         break;
                     case FINAL:
                         finish();
+                        startService(NotificationIntentService.getStartIntent(getApplicationContext()));
                         break;
                 }
                 textViewForState.setText(state.name());

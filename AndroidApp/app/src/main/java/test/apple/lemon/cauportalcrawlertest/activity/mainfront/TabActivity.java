@@ -1,5 +1,6 @@
 package test.apple.lemon.cauportalcrawlertest.activity.mainfront;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import test.apple.lemon.cauportalcrawlertest.R;
 import test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment.ContentListFragment;
 import test.apple.lemon.cauportalcrawlertest.activity.mainfront.fragment.PrefIndexFragment;
+import test.apple.lemon.cauportalcrawlertest.service.NotificationIntentService;
 
 public class TabActivity extends ActionBarActivity {
     private HashMap<Class<? extends Fragment>, TabItem> fragments = new HashMap<Class<? extends Fragment>, TabItem>();

@@ -15,6 +15,7 @@ public class EClassContent {
     public static final String BOARD_FIELD = "board";
     public static final String INDEX_FIELD = "index";
     public static final String DATETIME_FIELD = "datetime";
+    public static final String ALREADY_READ_FIELD = "isAlreadyRead";
 
     @DatabaseField(generatedId = true)
     private Integer id; // id 를 활용할 방법이 생각이 나질 않아서 아쉽다 ㅠㅜ
@@ -29,7 +30,7 @@ public class EClassContent {
     @DatabaseField(dataType = DataType.SERIALIZABLE)
     private HashMap<String, String> meta = new HashMap<String, String>();
 
-    @DatabaseField
+    @DatabaseField(columnName = ALREADY_READ_FIELD)
     private Boolean isAlreadyRead = false;
     @DatabaseField(columnName = DATETIME_FIELD, dataType = DataType.DATE)
     private Date datetime; // for sort.
