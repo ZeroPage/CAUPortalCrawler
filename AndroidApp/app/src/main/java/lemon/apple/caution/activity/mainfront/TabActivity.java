@@ -22,7 +22,6 @@ public class TabActivity extends ActionBarActivity {
         // android.R.id.content as the container for each fragment <-####
 
         // setup action bar for tabs
-        //todo may : 스크롤 탭 구현.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setIcon(R.drawable.ic_logo);

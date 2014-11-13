@@ -48,6 +48,9 @@
             android:name="lemon.apple.caution.service.CAUIntentService"
             android:enabled="true"
             android:exported="true" />
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="b19d471f37279f8672b1cedef9ece60643357f93" />
     </application>
 
 </manifest>

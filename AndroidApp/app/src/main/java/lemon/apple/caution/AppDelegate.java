@@ -3,11 +3,13 @@ package lemon.apple.caution;
 import android.app.Application;
 import android.content.Context;
 
+import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import lemon.apple.caution.model.helper.OrmLiteHelper;
+import timber.log.Timber;
 
 /**
  * Created by rino0601 on 2014. 11. 12..
@@ -34,7 +36,12 @@ public class AppDelegate extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else {
+            Crashlytics.start(this);
+            Timber.plant(new CrashlyticsTree());
+        }
         JodaTimeAndroid.init(this);
     }
 }
