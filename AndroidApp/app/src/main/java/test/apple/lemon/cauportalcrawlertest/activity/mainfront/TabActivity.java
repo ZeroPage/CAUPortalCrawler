@@ -25,7 +25,7 @@ public class TabActivity extends ActionBarActivity {
         //todo may : 스크롤 탭 구현.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setIcon(R.drawable.ic_launcher);
+            actionBar.setIcon(R.drawable.ic_logo);
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
             actionBar.setDisplayShowTitleEnabled(true);

@@ -196,7 +196,7 @@ public class CAUWebActivity extends Activity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Base_Theme_AppCompat_Light));
         dialog = builder.setTitle(R.string.app_name)
-                .setIcon(R.drawable.ic_action_about)
+                .setIcon(R.drawable.ic_logo)
                 .setMessage("E-Class를 읽는 중입니다. 잠시만 기다려주세요.")
                 .setCancelable(false)
                 .setPositiveButton("중단하기", new DialogInterface.OnClickListener() {
