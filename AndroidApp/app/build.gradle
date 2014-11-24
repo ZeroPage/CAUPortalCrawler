@@ -26,10 +26,29 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    def propFile=new File(project.property("MyProject.properties"))
+    if (project.hasProperty("MyProject.properties")
+            && propFile.exists()) {
+
+        Properties props = new Properties()
+        props.load(new FileInputStream(propFile))
+
+        android {
+            signingConfigs {
+                release {
+                    storeFile file(props['keystore'])
+                    storePassword props['keystore.password']
+                    keyAlias props['keyAlias']
+                    keyPassword props['keyPassword']
+                }
+            }
+        }
+    }
+
     buildTypes {
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
