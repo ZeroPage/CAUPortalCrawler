@@ -36,16 +36,15 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.jakewharton:butterknife:5.1.2'
-    compile 'com.jakewharton.timber:timber:2.4.1'
-    compile 'commons-io:commons-io:2.4'
-    compile 'org.jsoup:jsoup:1.7.2'
-    compile 'com.github.bumptech.glide:glide:3.4.0'
-    compile 'com.android.support:support-v4:21.0.0'
-    compile 'com.android.support:appcompat-v7:21.0.0'
-    compile 'net.danlew:android.joda:2.5.0'
-    compile 'com.j256.ormlite:ormlite-android:4.43'
-    compile 'com.google.android.gms:play-services:6.1.71'
-    compile 'com.google.code.gson:gson:2.3'
-    compile 'com.crashlytics.android:crashlytics:1.+'
+    compile 'com.jakewharton:butterknife:5.1.2'  // Dependency Injection, 코드량 감소 효과.
+    compile 'com.jakewharton.timber:timber:2.4.1' // 쉽고 편한 Logger, Crashlytics랑 같이 쓰기 좋음.
+    compile 'commons-io:commons-io:2.4' // IO 작업이 한두줄 내로 끝낼 수 있게 해줌.
+    compile 'org.jsoup:jsoup:1.7.2' // java html 파서.
+    compile 'com.github.bumptech.glide:glide:3.4.0' // Image Loader, 쉬운사용성, 다양한 소스 지원
+    compile 'com.android.support:support-v4:21.0.0' // 하위 호환을 위한 라이브러리
+    compile 'com.android.support:appcompat-v7:21.0.0' // 하위 호환을 위한 라이브러리
+    compile 'net.danlew:android.joda:2.5.0' // datetime 사용을 쉽게 하게 해주는 라이브러리
+    compile 'com.j256.ormlite:ormlite-android:4.43' // ORM, 로컬 디비 사용이 매우 편해진다.
+    compile 'com.google.code.gson:gson:2.3'  // JSON <-> Java Object
+    compile 'com.crashlytics.android:crashlytics:1.+' // 크래쉬 리포트.
 }

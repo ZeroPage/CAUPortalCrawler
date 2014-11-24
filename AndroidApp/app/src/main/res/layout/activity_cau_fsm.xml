@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:text="START"
-            android:textColor="@color/wallet_link_text_light" />
+            android:textColor="@color/accent_material_dark" />
 
         <WebView
             android:id="@+id/webView"
