@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
@@ -110,7 +109,8 @@ public class CAUIntentService extends IntentService {
             public static void setAlarm(Context context, Date time) {
                 PendingIntent pendingIntent = getPendingIntent(context);
                 AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time.getTime(), 24 * 60 * 60 * 1000, pendingIntent);
+                int intervalMillis = 24 * 60 * 60 * 1000;
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time.getTime(), intervalMillis, pendingIntent);
             }
 
             public static void cancelAlarm(Context context) {
@@ -127,15 +127,6 @@ public class CAUIntentService extends IntentService {
                 ConnectivityManager connectivityManager = (ConnectivityManager) intentService.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo activeNetworkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                 if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) { // Check network connection
-                    {// just for demo.
-                        PowerManager pm = (PowerManager) intentService.getSystemService(Context.POWER_SERVICE);
-                        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
-                                        | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                                "wakeup");
-                        wl.acquire();
-                        // do work.
-                        //wl.release();
-                    }
                     CAUFSMActivity.start(intentService);
 
                 } else {
